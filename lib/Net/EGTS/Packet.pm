@@ -24,27 +24,27 @@ our @STATES = qw(null base header ok);
 our %STATES = (
     # initial
     null        => {
-        index   => 0,
-        sub     => \&_decode_base,
-        next    => [qw(base ok)]
+        'index' => 0,
+        'sub'   => \&_decode_base,
+        'next'  => [qw(base ok)]
     },
     # the length of the header is known
     base        => {
-        index   => 1,
-        sub     => \&_decode_header,
-        next    => [qw(header ok)],
+        'index' => 1,
+        'sub'   => \&_decode_header,
+        'next'  => [qw(header ok)],
     },
     # header complete, process data
     header      => {
-        index   => 2,
-        sub     => \&_decode_data,
-        next    => [qw(ok)],
+        'index' => 2,
+        'sub'   => \&_decode_data,
+        'next'  => [qw(ok)],
     },
     # complete
     ok          => {
-        index   => 3,
-        sub     => sub { return $_[0] },
-        next    => [qw{ok}],
+        'index' => 3,
+        'sub'   => sub { return $_[0] },
+        'next'  => [qw{ok}],
     },
 );
 
