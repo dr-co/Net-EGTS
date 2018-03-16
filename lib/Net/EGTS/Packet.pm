@@ -2,7 +2,6 @@ use utf8;
 
 package Net::EGTS::Packet;
 use Mouse;
-extends qw(Exporter);
 
 use Carp;
 use List::MoreUtils     qw(natatime any);
@@ -11,17 +10,6 @@ use Net::EGTS::Util     qw(crc8 crc16 dumper_bitstring);
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
 #use Net::EGTS::Record   qw(decode_records);
-
-# Packet types
-use constant EGTS_PT_RESPONSE               => 0;
-use constant EGTS_PT_APPDATA                => 1;
-use constant EGTS_PT_SIGNED_APPDATA         => 2;
-
-our @EXPORT = qw(
-    EGTS_PT_RESPONSE
-    EGTS_PT_APPDATA
-    EGTS_PT_SIGNED_APPDATA
-);
 
 # Global packet identifier
 our $PID    = 0;
@@ -33,7 +21,7 @@ our %STATES = (
     null        => {
         index   => 0,
         sub     => \&_decode_base,
-        next    => [qw(base)]
+        next    => [qw(base ok)]
     },
     # the length of the header is known
     base        => {
@@ -51,7 +39,7 @@ our %STATES = (
     ok          => {
         index   => 3,
         sub     => sub { return $_[0] },
-        next    => [],
+        next    => [qw{ok}],
     },
 );
 
@@ -394,7 +382,8 @@ sub encode {
     }
 
     $self->bin( $bin );
-    $self->next( 'ok' => 0 ) unless $self->state eq 'ok';
+    $self->need( 0 );
+    $self->next( 'ok' => 0 );
     return $bin;
 }
 

@@ -4,6 +4,18 @@ package Net::EGTS::Codes;
 use Mouse;
 extends qw(Exporter);
 
+our @EXPORT;
+
+# Packet types
+use constant EGTS_PT_RESPONSE               => 0;
+use constant EGTS_PT_APPDATA                => 1;
+use constant EGTS_PT_SIGNED_APPDATA         => 2;
+push @EXPORT, qw(
+    EGTS_PT_RESPONSE
+    EGTS_PT_APPDATA
+    EGTS_PT_SIGNED_APPDATA
+);
+
 # Result codes
 use constant EGTS_PC_OK                     => 0;
 use constant EGTS_PC_IN_PROGRESS            => 1;
@@ -44,8 +56,7 @@ use constant EGTS_PC_MODULE_FW_FLT          => 161;
 use constant EGTS_PC_MODULE_IO_FLT          => 162;
 use constant EGTS_PC_MODULE_MEM_FLT         => 163;
 use constant EGTS_PC_TEST_FAILED            => 164;
-
-our @EXPORT = qw(
+push @EXPORT, qw(
     EGTS_PC_OK
     EGTS_PC_IN_PROGRESS
     EGTS_PC_UNS_PROTOCOL

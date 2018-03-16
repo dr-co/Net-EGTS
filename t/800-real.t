@@ -6,14 +6,15 @@ use utf8;
 use open qw(:std :utf8);
 use lib qw(lib ../lib);
 
-use Test::More tests    => 4;
+use Test::More tests    => 5;
 
 BEGIN {
     use_ok 'Net::EGTS::Packet';
     use_ok 'Net::EGTS::Util';
+    use_ok 'Net::EGTS::Codes';
 }
 
-subtest 'auth service - response' => sub {
+subtest 'auth service' => sub {
     plan tests => 16;
 
     my $test = q(
@@ -55,7 +56,7 @@ subtest 'auth service - response' => sub {
     is dumper_bitstring($result), dumper_bitstring($test), 'encode';
 };
 
-subtest 'auth service - response - partial decoding' => sub {
+subtest 'auth service - partial decoding' => sub {
     plan tests => 11;
 
     my $test = q(
