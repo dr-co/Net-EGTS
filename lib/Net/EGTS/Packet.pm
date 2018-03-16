@@ -294,36 +294,6 @@ sub decode {
     }
 
     die 'Unknown packet state: ', $self->state;
-#    if( $self->state eq 'null' ) {
-#        return (undef, $self->need - length($$bin))
-#            if length($$bin) < $self->need;
-#
-##        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
-#        my $result = $self->decode_packet_base( $bin );
-#        return $result unless ref $result;
-#    }
-#    if( $self->state eq 'base' ) {
-#        return (undef, $self->need - length($$bin))
-#            if length($$bin) < $self->need;
-#
-##        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
-#        my $result = $self->decode_packet_header( $bin );
-#        return $result unless ref $result;
-#    }
-#    if( $self->state eq 'header' ) {
-#        return (undef, $self->need - length($$bin))
-#            if length($$bin) < $self->need;
-#
-##        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
-#        my $result = $self->decode_packet_data( $bin );
-#        return $result unless ref $result;
-#    }
-#    if( $self->state eq 'ok' ) {
-##        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
-#        return $self;
-#    }
-#
-#    return $self;
 }
 
 # Basic header part with header length
