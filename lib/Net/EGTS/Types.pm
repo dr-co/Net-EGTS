@@ -1,6 +1,6 @@
 use utf8;
 
-package EGTS::Types;
+package Net::EGTS::Types;
 use Mouse;
 use Mouse::Util::TypeConstraints;
 

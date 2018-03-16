@@ -93,4 +93,5 @@ sub dumper_bitstring($;$) {
     }
     return join "\n", @chunks;
 }
+
 1;

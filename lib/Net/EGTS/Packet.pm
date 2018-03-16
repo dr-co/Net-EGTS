@@ -1,8 +1,8 @@
 use utf8;
 
 package Net::EGTS::Packet;
-use base qw(Exporter);
 use Mouse;
+extends qw(Exporter);
 
 use Carp;
 use List::MoreUtils     qw(natatime any);
@@ -238,6 +238,21 @@ has need        => is => 'rw', isa => 'uInt', default => 10;
 # Current packet decoder state
 has state       => is => 'rw', isa => 'Str',  default => 'null';
 
+#around BUILDARGS => sub {
+#    my $orig  = shift;
+#    my $class = shift;
+#
+#    # store binary
+##    my $bin = shift @_ unless @_ % 2;
+#
+#    my $self = $class->$orig( @_ );
+#
+#    # try decode
+##    return undef unless ref $self->decode( $bin );
+#
+#    return $self;
+#};
+
 # Store binary and count how mutch more bytes need
 sub add {
     my ($self, @bin) = @_;
@@ -265,7 +280,25 @@ sub next {
 
 =head2 decode \$bin
 
-Decode binary stream I<$bin> into packet object
+Decode binary stream I<$bin> into packet object.
+The binary stream will be truncated!
+Return:
+
+=over
+
+=item undef, $need
+
+if decode in process and need more data
+
+=item object
+
+if the packet is fully decoded
+
+=item error code
+
+if there are any problems
+
+=back
 
 =cut
 
@@ -389,7 +422,7 @@ sub decode_packet_data {
 
 =head2 encode
 
-Build packet
+Build packet as bynary
 
 =cut
 
@@ -445,33 +478,9 @@ sub encode {
     return $bin;
 }
 
-#around BUILDARGS => sub {
-#    my $orig  = shift;
-#    my $class = shift;
-#
-#    if( @_ == 1 ) {
-#        __PACKAGE__->new->decode( shift @_ );
-#    }
-#
-#    # Apply data
-#    if( my $data = delete $opts{data} ) {
-#        if ( ! ref $data ) {
-#            $opts{SFRD}  .= $data;
-#            $opts{SFRCS}  = crc16 $opts{SFRD};
-#        } elsif( 'ARRAY' eq ref $data ) {
-#            $opts{SFRD}  .= join '', @$data;
-#            $opts{SFRCS}  = crc16 $opts{SFRD};
-#        } else {
-#            die 'Field data must be arrayref or scalar';
-#        }
-#    }
-#
-#    return $class->$orig( %opts );
-#};
-
 =head2 as_debug
 
-Human readable
+Return human readable string
 
 =cut
 

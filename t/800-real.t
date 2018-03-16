@@ -9,8 +9,8 @@ use lib qw(lib ../lib);
 use Test::More tests    => 4;
 
 BEGIN {
-    use_ok 'Net::EGTS::Util';
     use_ok 'Net::EGTS::Packet';
+    use_ok 'Net::EGTS::Util';
 }
 
 subtest 'auth service - response' => sub {
@@ -45,7 +45,7 @@ subtest 'auth service - response' => sub {
     is $packet->HE,  0, 'Header Encoding';
     is $packet->FDL, 15, 'Frame Data Length';
     is $packet->PID, 0, 'Packet Identifier';
-    is $packet->PT,  1, 'Packet Type';
+    is $packet->PT,  EGTS_PT_APPDATA, 'Packet Type';
     is $packet->HCS, 155, 'Header Check Sum';
 
     is length($packet->SFRD), 15, 'Service Frame Data';
