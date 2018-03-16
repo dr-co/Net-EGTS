@@ -54,7 +54,15 @@ has SST         => is => 'rw', isa => 'BYTE';
 # Recipient Service Type
 has RST         => is => 'rw', isa => 'BYTE';
 # Record Data
-has RD          => is => 'rw', isa => 'BINARY';
+has RD          =>
+    is          => 'rw',
+    isa         => 'BINARY',
+    trigger     => sub {
+         my ($self, $value, $old) = @_;
+         die 'Record Data too short'    if length($value) < 3;
+         die 'Record Data too long'     if length($value) > 65498;
+    }
+;
 
 # Record binary
 has bin         => is => 'rw', isa => 'Str',  default => '';

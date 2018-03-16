@@ -23,11 +23,15 @@ subtest 'base' => sub {
 
     my $bin = $packet->encode;
     ok $bin, 'encode';
-
-    my $result = Net::EGTS::Packet->new->decode( \$bin );
-    isa_ok $result, 'Net::EGTS::Packet';
-
     note $packet->as_debug;
+
+#    my $result = Net::EGTS::Packet->new( $bin );
+#    isa_ok $result, 'Net::EGTS::Packet';
+#    note $result->as_debug;
+
+    my $result2 = Net::EGTS::Packet->new->decode( \$bin );
+    isa_ok $result2, 'Net::EGTS::Packet';
+    note $result2->as_debug;
 
     is $packet->PRV, 1, 'Protocol Version';
     is $packet->SKID, 0, 'Security Key ID';

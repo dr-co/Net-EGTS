@@ -10,7 +10,6 @@ use List::MoreUtils     qw(natatime any);
 use Net::EGTS::Util     qw(crc8 crc16 usize dumper_bitstring);
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
-#use Net::EGTS::Record   qw(decode_records);
 
 require Net::EGTS::Packet::Response;
 require Net::EGTS::Packet::Appdata;
@@ -135,7 +134,15 @@ has HCS         =>
 ;
 
 # Service Frame Data
-has SFRD        => is => 'rw', isa => 'Maybe[BINARY]', default => '';
+has SFRD        =>
+    is          => 'rw',
+    isa         => 'Maybe[BINARY]',
+    default     => '',
+    trigger     => sub {
+         my ($self, $value, $old) = @_;
+         die 'Service Frame Data too long' if length($value) > 65517;
+    }
+;
 # Service Frame Data Check Sum
 has SFRCS       =>
     is          => 'rw',
@@ -162,16 +169,26 @@ has state       => is => 'rw', isa => 'Str',  default => 'null';
 #    my $orig  = shift;
 #    my $class = shift;
 #
-#    # store binary
-##    my $bin = shift @_ unless @_ % 2;
+#    # simple scalar decoding support
+#    my $bin   = @_ % 2 ? shift : undef;
+#    my %opts  = @_;
 #
-#    my $self = $class->$orig( @_ );
-#
-#    # try decode
-##    return undef unless ref $self->decode( $bin );
-#
-#    return $self;
+#    return $class->$orig(
+#        bin     => $bin,
+##        need    => length($bin),
+##        state   => 'null',
+#        %opts
+#    ) if $bin;
+#    return $class->$orig( %opts );
 #};
+#sub BUILD {
+#    my $self = shift;
+#    my $args = shift;
+#
+#    $self->decode( \$self->bin ) if length $self->bin;
+#    use Data::Dumper;
+#    warn Dumper($self);
+#}
 
 # Store binary and count how mutch more bytes need
 sub take {
@@ -192,7 +209,7 @@ sub take {
 sub next {
     my ($self, $state, $need) = @_;
 
-    croak 'Something wrong. Has bynary data for decode.' if $self->need;
+    croak 'Need more binary data. Something wrong in decoder?' if $self->need;
     croak sprintf 'Can`t goto state "%s" from "%s"', $state, $self->state
         unless any { $_ eq $state} @{$STATES{ $self->state }{next}};
 
