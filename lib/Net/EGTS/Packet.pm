@@ -345,7 +345,7 @@ sub _decode_data {
 
 =head2 encode
 
-Build packet as bynary
+Build packet as binary
 
 =cut
 
