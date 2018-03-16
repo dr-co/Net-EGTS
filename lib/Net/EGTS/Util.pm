@@ -10,7 +10,12 @@ use Digest::CRC     qw();
 use Date::Parse     qw();
 use List::MoreUtils qw(natatime any);
 
-our @EXPORT = qw(crc8 crc16 str2time time2010 dumper_bitstring);
+our @EXPORT = qw(
+    crc8 crc16
+    str2time time2new new2time
+    dumper_bitstring
+    usize
+);
 
 use constant TIMESTAMP_20100101_000000_UTC  => 1262304000;
 
@@ -65,16 +70,27 @@ sub str2time($) {
     return Date::Parse::str2time( $_[0] );
 }
 
-=head2 time2010 [$time]
+=head2 time2new [$time]
 
 Return time from 2010 instead of 1970
 
 =cut
 
-sub time2010(;$) {
+sub time2new(;$) {
     my ($time) = @_;
     $time //= time;
     return ($time - TIMESTAMP_20100101_000000_UTC);
+}
+
+=head2 new2time [$time]
+
+Return time from 1970 instead of 2010
+
+=cut
+
+sub new2time($) {
+    my ($time) = @_;
+    return ($time + TIMESTAMP_20100101_000000_UTC);
 }
 
 =head2 dumper_bitstring $bin, [$size]
@@ -94,4 +110,18 @@ sub dumper_bitstring($;$) {
     return join "\n", @chunks;
 }
 
+=head2 usize $mask
+
+Return size in bytes of pack/unpack mask
+
+=cut
+
+sub usize {
+    return
+        $_[0] =~ m{C}i  ? 1 :
+        $_[0] =~ m{B8}i ? 1 :
+        $_[0] =~ m{S}i  ? 2 :
+        $_[0] =~ m{L}i  ? 4 : confess 'Unknown mask: ' . $_[0]
+    ;
+}
 1;

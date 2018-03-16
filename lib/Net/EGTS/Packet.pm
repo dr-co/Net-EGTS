@@ -7,7 +7,7 @@ use Mouse;
 use Carp;
 use List::MoreUtils     qw(natatime any);
 
-use Net::EGTS::Util     qw(crc8 crc16 dumper_bitstring);
+use Net::EGTS::Util     qw(crc8 crc16 usize dumper_bitstring);
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
 #use Net::EGTS::Record   qw(decode_records);
@@ -174,15 +174,16 @@ has state       => is => 'rw', isa => 'Str',  default => 'null';
 #};
 
 # Store binary and count how mutch more bytes need
-sub add {
-    my ($self, @bin) = @_;
+sub take {
+    my ($self, $bin, $mask, $length) = @_;
     use bytes;
+    $length //= usize($mask);
 
-    for my $bin ( @bin ) {
-        $self->bin( $self->bin . $bin );
-        $self->need( $self->need - length($bin) );
-    }
-    return $self;
+    my $chunk = substr $$bin, 0 => $length, '';
+    $self->bin( $self->bin . $chunk );
+    $self->need( $self->need - length($chunk) );
+
+    return unpack $mask => $chunk;
 }
 
 # Goto next decode state
@@ -254,24 +255,21 @@ sub _decode_base {
     my ($self, $bin) = @_;
     use bytes;
 
-    my $base = substr $$bin, 0 => 10, '';
-    my ($prv, $skid, $flags, $hl, $he, $fdl, $pid, $pt) =
-        unpack 'C C C C C S S C' => $base;
-    $self->add( $base );
+    $self->PRV( $self->take($bin => 'C') );
+    $self->SKID($self->take($bin => 'C') );
 
-    $self->PRV( $prv );
-    $self->SKID($skid );
-    $self->HL(  $hl );
-    $self->HE(  $he );
-    $self->FDL( $fdl );
-    $self->PID( $pid );
-    $self->PT(  $pt );
-
+    my $flags = $self->take($bin => 'C');
     $self->PRF(         ($flags & 0b11000000) >> 6 );
     $self->RTE(         ($flags & 0b00100000) >> 5 );
     $self->ENA(         ($flags & 0b00011000) >> 3 );
     $self->CMP(         ($flags & 0b00000100) >> 2 );
     $self->PRIORITY(    ($flags & 0b00000011)      );
+
+    $self->HL(  $self->take($bin => 'C') );
+    $self->HE(  $self->take($bin => 'C') );
+    $self->FDL( $self->take($bin => 'S') );
+    $self->PID( $self->take($bin => 'S') );
+    $self->PT(  $self->take($bin => 'C') );
 
     return EGTS_PC_UNS_PROTOCOL     unless $self->PRV == 0x01;
     return EGTS_PC_INC_HEADERFORM   unless $self->HL  == 11 || $self->HL == 16;
@@ -285,24 +283,16 @@ sub _decode_header {
     my ($self, $bin) = @_;
     use bytes;
 
-    my $optional = '';
     if( $self->RTE ) {
-        $optional = substr $$bin, 0 => 5, '';
-        my ($pra, $rca, $ttl) = unpack 'S S C' => $optional;
-        $self->add( $optional );
-
-        $self->PRA( $pra );
-        $self->RCA( $rca );
-        $self->TTL( $ttl );
+        $self->PRA( $self->take($bin => 'S') );
+        $self->RCA( $self->take($bin => 'S') );
+        $self->TTL( $self->take($bin => 'C') );
 
         die 'RTE not supported';
     }
 
     # Header CRC8
-    my $crc8 = substr $$bin, 0 => 1, '';
-    my $hsc = unpack 'C' => $crc8;
-    $self->add( $crc8 );
-
+    my $hsc = $self->take($bin => 'C');
     return EGTS_PC_HEADERCRC_ERROR unless $self->HCS == $hsc;
 
     # Complete package. No data.
@@ -316,16 +306,10 @@ sub _decode_data {
     my ($self, $bin) = @_;
     use bytes;
 
-    my $sfrd = substr $$bin, 0 => $self->FDL, '';
-    $self->SFRD( $sfrd );
-    $self->add( $sfrd );
+    $self->SFRD( $self->take($bin => 'a*' => $self->FDL) );
 
-    my $crc16 = substr $$bin, 0 => 2, '';
-    my $sfrcs = unpack 'S' => $crc16;
-
-    $self->SFRCS( $sfrcs );
-    $self->add( $crc16 );
-    return EGTS_PC_DATACRC_ERROR unless $self->SFRCS == crc16 $self->SFRD;
+    my $sfrcs = $self->take($bin => 'S');
+    return EGTS_PC_DATACRC_ERROR unless $self->SFRCS == $sfrcs;
 
     unless( $self->ENA == 0x00 ) {
         warn 'Encryption not supported yet';
