@@ -1,6 +1,7 @@
 use utf8;
 
 package Net::EGTS::Packet;
+use namespace::autoclean;
 use Mouse;
 
 use Carp;
@@ -10,6 +11,10 @@ use Net::EGTS::Util     qw(crc8 crc16 dumper_bitstring);
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
 #use Net::EGTS::Record   qw(decode_records);
+
+require Net::EGTS::Packet::Response;
+require Net::EGTS::Packet::Appdata;
+require Net::EGTS::Packet::SignedAppdata;
 
 # Global packet identifier
 our $PID    = 0;
@@ -41,6 +46,13 @@ our %STATES = (
         sub     => sub { return $_[0] },
         next    => [qw{ok}],
     },
+);
+
+# Packet types and classes
+our %TYPES = (
+    EGTS_PT_RESPONSE,       'Net::EGTS::Packet::Response',
+    EGTS_PT_APPDATA,        'Net::EGTS::Packet::Appdata',
+    EGTS_PT_SIGNED_APPDATA, 'Net::EGTS::Packet::SignedAppdata',
 );
 
 # Protocol Version
@@ -216,7 +228,7 @@ sub decode {
 
     for my $name ( @STATES ) {
         # all complete
-        return $self if $self->state eq 'ok';
+        return bless $self, $TYPES{ $self->PT } if $self->state eq 'ok';
 
         # skip completed steps
         next unless $name eq $self->state;

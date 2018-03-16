@@ -1,6 +1,7 @@
 use utf8;
 
 package Net::EGTS::Packet::SignedAppdata;
+use namespace::autoclean;
 use Mouse;
 extends qw(Net::EGTS::Packet);
 
