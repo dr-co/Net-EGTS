@@ -7,7 +7,7 @@ use Mouse;
 use Carp;
 use List::MoreUtils     qw(natatime);
 
-use Net::EGTS::Util     qw(new2time usize dumper_bitstring);
+use Net::EGTS::Util     qw(str2time time2new new2time usize dumper_bitstring);
 use Net::EGTS::Types;
 
 # Record Length
@@ -71,13 +71,23 @@ has time        =>
     },
 ;
 
-# Constructor with simple scalar decoding
 around BUILDARGS => sub {
     my $orig  = shift;
     my $class = shift;
 
-    return $class->$orig( bin => shift(), @_ ) if @_ % 2;
-    return $class->$orig( @_ );
+    # simple scalar decoding support
+    my $bin   = @_ % 2 ? shift : undef;
+    my %opts  = @_;
+
+    # simple time support
+    if( defined $opts{time} ) {
+        $opts{time} = str2time( $opts{time} );
+        $opts{TM}   = time2new( $opts{time} );
+        $opts{TMFE} = 1 if $opts{TM};
+    }
+
+    return $class->$orig( bin => $bin, %opts ) if $bin;
+    return $class->$orig( %opts );
 };
 sub BUILD {
     my $self = shift;
