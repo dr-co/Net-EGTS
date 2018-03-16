@@ -71,7 +71,7 @@ subtest 'time' => sub {
     is $record->TMFE,   1, 'Time Field Exists';
 };
 
-subtest 'records_all' => sub {
+subtest 'decode_all' => sub {
     plan tests => 5;
 
     my $record1 = Net::EGTS::Service::Record->new(
