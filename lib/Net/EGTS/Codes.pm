@@ -99,5 +99,104 @@ push @EXPORT, qw(
     EGTS_PC_TEST_FAILED
 );
 
+# Service type
+use constant EGTS_AUTH_SERVICE              => 1;
+use constant EGTS_TELEDATA_SERVICE          => 2;
+use constant EGTS_COMMANDS_SERVICE          => 3;
+use constant EGTS_FIRMWARE_SERVICE          => 4;
+# .. 63 reserved
+use constant EGTS_USER_SERVICE              => 64;
+push @EXPORT, qw(
+    EGTS_AUTH_SERVICE
+    EGTS_TELEDATA_SERVICE
+    EGTS_COMMANDS_SERVICE
+    EGTS_FIRMWARE_SERVICE
+
+    EGTS_USER_SERVICE
+);
+
+# Service state
+use constant EGTS_SST_IN_SERVICE            => 0;
+use constant EGTS_SST_OUT_OF_SERVICE        => 128;
+use constant EGTS_SST_DENIDED               => 129;
+use constant EGTS_SST_NO_CONF               => 130;
+use constant EGTS_SST_TEMP_UNAVAIL          => 131;
+push @EXPORT, qw(
+    EGTS_SST_IN_SERVICE
+    EGTS_SST_OUT_OF_SERVICE
+    EGTS_SST_DENIDED
+    EGTS_SST_NO_CONF
+    EGTS_SST_TEMP_UNAVAIL
+);
+
+# Source Data codes (custom names)
+use constant EGTS_SRCD_TIMER                => 0;
+use constant EGTS_SRCD_DISTANCE             => 1;
+use constant EGTS_SRCD_ANGLE                => 2;
+use constant EGTS_SRCD_RESPONSE             => 3;
+#...
+use constant EGTS_SRCD_EXTERNAL             => 16;
+#...
+use constant EGTS_SRCD_CHANGE_MODE          => 35;
+push @EXPORT, qw(
+    EGTS_SRCD_TIMER
+    EGTS_SRCD_DISTANCE
+    EGTS_SRCD_ANGLE
+    EGTS_SRCD_RESPONSE
+
+    EGTS_SRCD_EXTERNAL
+
+    EGTS_SRCD_CHANGE_MODE
+);
+
+# Subrecord types common
+use constant EGTS_SR_RECORD_RESPONSE        => 0;
+# Subrecord types for EGTS_AUTH_SERVICE
+use constant EGTS_SR_TERM_IDENTITY          => 1;
+use constant EGTS_SR_MODULE_DATA            => 2;
+use constant EGTS_SR_VEHICLE_DATA           => 3;
+use constant EGTS_SR_DISPATCHER_IDENTITY    => 5;
+use constant EGTS_SR_AUTH_PARAMS            => 6;
+use constant EGTS_SR_AUTH_INFO              => 7;
+use constant EGTS_SR_SERVICE_INFO           => 8;
+use constant EGTS_SR_RESULT_CODE            => 9;
+# Subrecord types for EGTS_TELEDATA_SERVICE
+use constant EGTS_SR_POS_DATA               => 16;
+use constant EGTS_SR_EXT_POS_DATA           => 17;
+use constant EGTS_SR_AD_SENSORS_DATA        => 18;
+use constant EGTS_SR_COUNTERS_DATA          => 19;
+use constant EGTS_SR_STATE_DATA             => 20;
+use constant EGTS_SR_LOOPIN_DATA            => 22;
+use constant EGTS_SR_ABS_DIG_SENS_DATA      => 23;
+use constant EGTS_SR_ABS_AN_SENS_DATA       => 24;
+use constant EGTS_SR_ABS_CNTR_DATA          => 25;
+use constant EGTS_SR_ABS_LOOPIN_DATA        => 26;
+use constant EGTS_SR_LIQUID_LEVEL_SENSOR    => 27;
+use constant EGTS_SR_PASSENGERS_COUNTERS    => 28;
+push @EXPORT, qw(
+    EGTS_SR_RECORD_RESPONSE
+
+    EGTS_SR_TERM_IDENTITY
+    EGTS_SR_MODULE_DATA
+    EGTS_SR_VEHICLE_DATA
+    EGTS_SR_DISPATCHER_IDENTITY
+    EGTS_SR_AUTH_PARAMS
+    EGTS_SR_AUTH_INFO
+    EGTS_SR_SERVICE_INFO
+    EGTS_SR_RESULT_CODE
+
+    EGTS_SR_POS_DATA
+    EGTS_SR_EXT_POS_DATA
+    EGTS_SR_AD_SENSORS_DATA
+    EGTS_SR_COUNTERS_DATA
+    EGTS_SR_STATE_DATA
+    EGTS_SR_LOOPIN_DATA
+    EGTS_SR_ABS_DIG_SENS_DATA
+    EGTS_SR_ABS_AN_SENS_DATA
+    EGTS_SR_ABS_CNTR_DATA
+    EGTS_SR_ABS_LOOPIN_DATA
+    EGTS_SR_LIQUID_LEVEL_SENSOR
+    EGTS_SR_PASSENGERS_COUNTERS
+);
 
 __PACKAGE__->meta->make_immutable();
