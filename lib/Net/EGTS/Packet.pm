@@ -105,12 +105,34 @@ our @EXPORT = qw(
 
 # Global packet identifier
 our $PID    = 0;
+
 # State machine
+our @STATES = qw(null base header ok);
 our %STATES = (
-    null    => [qw(base)],
-    base    => [qw(header ok)],
-    header  => [qw(ok)],
-    ok      => [],
+    # initial
+    null        => {
+        index   => 0,
+        sub     => \&decode_packet_base,
+        next    => [qw(base)]
+    },
+    # the length of the header is known
+    base        => {
+        index   => 1,
+        sub     => \&decode_packet_header,
+        next    => [qw(header ok)],
+    },
+    # header complete, process data
+    header      => {
+        index   => 2,
+        sub     => \&decode_packet_data,
+        next    => [qw(ok)],
+    },
+    # complete
+    ok          => {
+        index   => 3,
+        sub     => sub { return $_[0] },
+        next    => [],
+    },
 );
 
 # Protocol Version
@@ -193,15 +215,17 @@ has HCS         =>
 ;
 
 # Service Frame Data
-has SFRD        => is => 'rw', isa => 'BINARY', default => '';
+has SFRD        => is => 'rw', isa => 'Maybe[BINARY]', default => '';
 # Service Frame Data Check Sum
 has SFRCS       =>
     is          => 'rw',
-    isa         => 'USHORT',
+    isa         => 'Maybe[USHORT]',
     lazy        => 1,
     builder     => sub {
         use bytes;
         die 'Binary too short to get CRC16' if $_[0]->FDL > length $_[0]->SFRD;
+        return undef unless defined $_[0]->SFRD;
+        return undef unless length  $_[0]->SFRD;
         return crc16( $_[0]->SFRD );
     }
 ;
@@ -232,7 +256,7 @@ sub next {
 
     croak 'Something wrong. Has bynary data for decode.' if $self->need;
     croak sprintf 'Can`t goto state "%s" from "%s"', $state, $self->state
-        unless any { $_ eq $state} @{$STATES{ $self->state }};
+        unless any { $_ eq $state} @{$STATES{ $self->state }{next}};
 
     $self->state( $state );
     $self->need( $need );
@@ -249,26 +273,57 @@ sub decode {
     my ($self, $bin) = @_;
     use bytes;
 
-    return $self->need - length($$bin) if length($$bin) < $self->need;
+    for my $name ( @STATES ) {
+        # all complete
+        return $self if $self->state eq 'ok';
 
-    if( $self->state eq 'null' ) {
-#        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
-        return $self->need unless ref $self->decode_packet_base( $bin );
-    }
-    if( $self->state eq 'base' ) {
-#        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
-        return $self->need unless ref $self->decode_packet_header( $bin );
-    }
-    if( $self->state eq 'header' ) {
-#        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
-        return $self->need unless ref $self->decode_packet_data( $bin );
-    }
-    if( $self->state eq 'ok' ) {
-#        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
-        return $self;
+        # goto next step
+        next unless $name eq $self->state;
+
+        # need more data
+        my $bin_length = length($$bin);
+        return (undef, $self->need - $bin_length) if $bin_length < $self->need;
+
+        # get current state definition
+        my $state   = $STATES{$name};
+        my $sub     = $state->{sub};
+
+        # process data
+        my $result = $self->$sub( $bin );
+        return $result unless ref $result;
     }
 
-    return $self;
+    die 'Unknown packet state: ', $self->state;
+#    if( $self->state eq 'null' ) {
+#        return (undef, $self->need - length($$bin))
+#            if length($$bin) < $self->need;
+#
+##        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
+#        my $result = $self->decode_packet_base( $bin );
+#        return $result unless ref $result;
+#    }
+#    if( $self->state eq 'base' ) {
+#        return (undef, $self->need - length($$bin))
+#            if length($$bin) < $self->need;
+#
+##        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
+#        my $result = $self->decode_packet_header( $bin );
+#        return $result unless ref $result;
+#    }
+#    if( $self->state eq 'header' ) {
+#        return (undef, $self->need - length($$bin))
+#            if length($$bin) < $self->need;
+#
+##        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
+#        my $result = $self->decode_packet_data( $bin );
+#        return $result unless ref $result;
+#    }
+#    if( $self->state eq 'ok' ) {
+##        warn $self->state, ': ', dumper_bitstring($self->bin), "<\n>", dumper_bitstring($$bin);
+#        return $self;
+#    }
+#
+#    return $self;
 }
 
 # Basic header part with header length
