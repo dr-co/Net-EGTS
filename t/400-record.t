@@ -9,30 +9,30 @@ use lib qw(lib ../lib);
 use Test::More tests    => 5;
 
 BEGIN {
-    use_ok 'Net::EGTS::Service::Record';
+    use_ok 'Net::EGTS::Record';
     use_ok 'Net::EGTS::Codes';
 }
 
 subtest 'base' => sub {
     plan tests => 19;
 
-    my $record = Net::EGTS::Service::Record->new(
+    my $record = Net::EGTS::Record->new(
         SST => EGTS_AUTH_SERVICE,
         RST => EGTS_AUTH_SERVICE,
         RD  => 'abc',
     );
-    isa_ok $record, 'Net::EGTS::Service::Record';
+    isa_ok $record, 'Net::EGTS::Record';
 
     my $bin = $record->encode;
     ok $bin, 'encode';
     note $record->as_debug;
 
-    my $result = Net::EGTS::Service::Record->new( $bin );
-    isa_ok $result, 'Net::EGTS::Service::Record';
+    my $result = Net::EGTS::Record->new( $bin );
+    isa_ok $result, 'Net::EGTS::Record';
     note $result->as_debug;
 
-    my $result2 = Net::EGTS::Service::Record->new->decode( \$bin );
-    isa_ok $result2, 'Net::EGTS::Service::Record';
+    my $result2 = Net::EGTS::Record->new->decode( \$bin );
+    isa_ok $result2, 'Net::EGTS::Record';
     note $result2->as_debug;
 
     is $record->RL, 3, 'Record Length';
@@ -58,14 +58,14 @@ subtest 'base' => sub {
 subtest 'time' => sub {
     plan tests => 3;
 
-    my $record = Net::EGTS::Service::Record->new(
+    my $record = Net::EGTS::Record->new(
         SST     => EGTS_AUTH_SERVICE,
         RST     => EGTS_AUTH_SERVICE,
         RD      => 'abc',
 
         time    => '2018-01-01 22:30:00',
     );
-    isa_ok $record, 'Net::EGTS::Service::Record';
+    isa_ok $record, 'Net::EGTS::Record';
 
     is $record->TM,     252531000, 'Time';
     is $record->TMFE,   1, 'Time Field Exists';
@@ -74,23 +74,23 @@ subtest 'time' => sub {
 subtest 'decode_all' => sub {
     plan tests => 5;
 
-    my $record1 = Net::EGTS::Service::Record->new(
+    my $record1 = Net::EGTS::Record->new(
         SST => EGTS_AUTH_SERVICE,
         RST => EGTS_AUTH_SERVICE,
         RD  => 'foo',
     );
-    isa_ok $record1, 'Net::EGTS::Service::Record';
+    isa_ok $record1, 'Net::EGTS::Record';
 
-    my $record2 = Net::EGTS::Service::Record->new(
+    my $record2 = Net::EGTS::Record->new(
         SST => EGTS_AUTH_SERVICE,
         RST => EGTS_AUTH_SERVICE,
         RD  => 'bar',
     );
-    isa_ok $record2, 'Net::EGTS::Service::Record';
+    isa_ok $record2, 'Net::EGTS::Record';
 
     my $bin = join '', map { $_->encode } $record1, $record2;
 
-    my @records = Net::EGTS::Service::Record->decode_all($bin);
+    my @records = Net::EGTS::Record->decode_all($bin);
     is @records, 2, 'two records';
     is $records[0]->RD, $record1->RD, 'RD 1';
     is $records[1]->RD, $record2->RD, 'RD 2';

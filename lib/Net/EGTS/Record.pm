@@ -1,6 +1,6 @@
 use utf8;
 
-package Net::EGTS::Service::Record;
+package Net::EGTS::Record;
 use namespace::autoclean;
 use Mouse;
 
@@ -12,7 +12,7 @@ use Net::EGTS::Types;
 
 =head1 NAME
 
-Net::EGTS::Service::Record - Record
+Net::EGTS::Record - Record
 
 =cut
 
@@ -220,7 +220,7 @@ sub decode_all {
     my $i = 0;
     my @result;
     while( my $length = length $bin ) {
-        my $record = Net::EGTS::Service::Record->new(RN => $i)->decode( \$bin );
+        my $record = Net::EGTS::Record->new(RN => $i)->decode( \$bin );
         die 'Something wrong in records decode' unless $record;
 
         push @result, $record;
