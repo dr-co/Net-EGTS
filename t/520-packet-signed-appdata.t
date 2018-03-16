@@ -34,7 +34,7 @@ subtest 'base' => sub {
     is $packet->RTE, 0, 'Route';
     is $packet->ENA, 0, 'Encryption Algorithm';
     is $packet->CMP, 0, 'Compressed';
-    is $packet->PR,  0, 'Priority';
+    is $packet->PRIORITY,  0, 'Priority';
 
     is $packet->HL,  11, 'Header Length';
     is $packet->HE,  0, 'Header Encoding';

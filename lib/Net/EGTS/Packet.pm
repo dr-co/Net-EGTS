@@ -70,7 +70,7 @@ has ENA         => is => 'rw', isa => 'BIT2', default => 0x00;
 # Compressed
 has CMP         => is => 'rw', isa => 'BIT1', default => 0x0;
 # Priority
-has PR          => is => 'rw', isa => 'Priority', coerce => 1, default => 0x00;
+has PRIORITY    => is => 'rw', isa => 'Priority', coerce => 1, default => 0x00;
 
 # Header Length
 has HL          =>
@@ -267,11 +267,11 @@ sub _decode_base {
     $self->PID( $pid );
     $self->PT(  $pt );
 
-    $self->PRF( ($flags & 0b11000000) >> 6 );
-    $self->RTE( ($flags & 0b00100000) >> 5 );
-    $self->ENA( ($flags & 0b00011000) >> 3 );
-    $self->CMP( ($flags & 0b00000100) >> 2 );
-    $self->PR(  ($flags & 0b00000011)      );
+    $self->PRF(         ($flags & 0b11000000) >> 6 );
+    $self->RTE(         ($flags & 0b00100000) >> 5 );
+    $self->ENA(         ($flags & 0b00011000) >> 3 );
+    $self->CMP(         ($flags & 0b00000100) >> 2 );
+    $self->PRIORITY(    ($flags & 0b00000011)      );
 
     return EGTS_PC_UNS_PROTOCOL     unless $self->PRV == 0x01;
     return EGTS_PC_INC_HEADERFORM   unless $self->HL  == 11 || $self->HL == 16;
@@ -375,7 +375,7 @@ sub encode {
         $self->PRV, $self->SKID,
         sprintf(
             '%02b%b%02b%b%02b',
-            $self->PRF, $self->RTE, $self->ENA, $self->CMP, $self->PR,
+            $self->PRF, $self->RTE, $self->ENA, $self->CMP, $self->PRIORITY,
         ),
         $self->HL, $self->HE, $self->FDL, $self->PID, $self->PT,
         @optional,
