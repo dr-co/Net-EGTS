@@ -6,16 +6,17 @@ use utf8;
 use open qw(:std :utf8);
 use lib qw(lib ../lib);
 
-use Test::More tests    => 5;
+use Test::More tests    => 6;
 
 BEGIN {
     use_ok 'Net::EGTS::Packet';
+    use_ok 'Net::EGTS::Record';
     use_ok 'Net::EGTS::Util';
     use_ok 'Net::EGTS::Codes';
 }
 
 subtest 'auth service' => sub {
-    plan tests => 16;
+    plan tests => 18;
 
     my $test = q(
         00000001 00000000 00000011 00001011
@@ -30,6 +31,7 @@ subtest 'auth service' => sub {
 
     my $bin = "$test";
     my $packet = Net::EGTS::Packet->new->decode( \$bin );
+    isa_ok $packet, 'Net::EGTS::Packet';
 
     note $packet->as_debug;
 
@@ -51,6 +53,10 @@ subtest 'auth service' => sub {
 
     is length($packet->SFRD), 15, 'Service Frame Data';
     is $packet->SFRCS, 35063, 'Service Frame Data Check Sum';
+
+    my $record = $packet->records;
+    isa_ok $record->[0], 'Net::EGTS::Record';
+    note $record->[0]->as_debug;
 
     my $result = $packet->encode;
     is dumper_bitstring($result), dumper_bitstring($test), 'encode';

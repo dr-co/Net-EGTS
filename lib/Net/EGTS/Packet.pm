@@ -15,6 +15,8 @@ require Net::EGTS::Packet::Response;
 require Net::EGTS::Packet::Appdata;
 require Net::EGTS::Packet::SignedAppdata;
 
+require Net::EGTS::Record;
+
 # Global packet identifier
 our $PID    = 0;
 
@@ -149,11 +151,12 @@ has SFRCS       =>
     isa         => 'Maybe[USHORT]',
     lazy        => 1,
     builder     => sub {
+        my ($self) = @_;
         use bytes;
-        die 'Binary too short to get CRC16' if $_[0]->FDL > length $_[0]->SFRD;
-        return undef unless defined $_[0]->SFRD;
-        return undef unless length  $_[0]->SFRD;
-        return crc16( $_[0]->SFRD );
+        die 'Binary too short to get CRC16' if $self->FDL > length $self->SFRD;
+        return undef unless defined $self->SFRD;
+        return undef unless length  $self->SFRD;
+        return crc16( $self->SFRD );
     }
 ;
 
@@ -164,6 +167,18 @@ has bin         => is => 'rw', isa => 'Str',  default => '';
 has need        => is => 'rw', isa => 'uInt', default => 10;
 # Current packet decoder state
 has state       => is => 'rw', isa => 'Str',  default => 'null';
+# Array of decoded records
+has records     =>
+    is          => 'rw',
+    isa         => 'ArrayRef[Net::EGTS::Record]',
+    lazy        => 1,
+    builder     => sub {
+        my ($self) = @_;
+        return [] unless defined $self->SFRD;
+        return [] unless length  $self->SFRD;
+        return Net::EGTS::Record->decode_all( $self->SFRD );
+    },
+;
 
 #around BUILDARGS => sub {
 #    my $orig  = shift;
