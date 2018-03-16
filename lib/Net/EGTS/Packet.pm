@@ -177,7 +177,9 @@ has state       => is => 'rw', isa => 'Str',  default => 'null';
 sub take {
     my ($self, $bin, $mask, $length) = @_;
     use bytes;
+
     $length //= usize($mask);
+    confess "Can`t get chunk of length $length" if $length > length $$bin;
 
     my $chunk = substr $$bin, 0 => $length, '';
     $self->bin( $self->bin . $chunk );
