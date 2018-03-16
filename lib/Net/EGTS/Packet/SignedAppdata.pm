@@ -9,11 +9,11 @@ use Net::EGTS::Types;
 use Net::EGTS::Codes;
 
 # Signature Length
-has SIGL        => is => 'rw', isa => 'SHORT';
+has SIGL        => is => 'rw', isa => 'SHORT', default => 0;
 # Signature Data
-has SIGD        => is => 'rw', isa => 'BYNARY';
+has SIGD        => is => 'rw', isa => 'Maybe[BINARY]';
 # Service Data Record
-has SDR         => is => 'rw', isa => 'BYNARY';
+has SDR         => is => 'rw', isa => 'Maybe[BINARY]';
 
 after 'decode' => sub {
     my ($self) = @_;

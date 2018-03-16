@@ -14,7 +14,7 @@ BEGIN {
 }
 
 subtest 'base' => sub {
-    plan tests => 16;
+    plan tests => 19;
 
     my $packet = Net::EGTS::Packet::SignedAppdata->new;
     isa_ok $packet, 'Net::EGTS::Packet::SignedAppdata';
@@ -42,4 +42,8 @@ subtest 'base' => sub {
     is $packet->PID, 0, 'Packet Identifier';
     is $packet->PT,  EGTS_PT_SIGNED_APPDATA, 'Packet Type';
     is $packet->HCS, 118, 'Header Check Sum';
+
+    is $packet->SIGL,   0,     'Signature Length';
+    is $packet->SIGD,   undef, 'Signature Data';
+    is $packet->SDR,    undef, 'Service Data Record';
 };

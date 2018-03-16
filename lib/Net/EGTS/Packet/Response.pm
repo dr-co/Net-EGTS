@@ -13,7 +13,7 @@ has RPID        => is => 'rw', isa => 'USHORT';
 # Processing Result
 has PR          => is => 'rw', isa => 'BYTE';
 # Service Data Record
-has SDR         => is => 'rw', isa => 'BYNARY';
+has SDR         => is => 'rw', isa => 'Maybe[BINARY]';
 
 after 'decode' => sub {
     my ($self) = @_;

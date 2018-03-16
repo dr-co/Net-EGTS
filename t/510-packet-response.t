@@ -14,7 +14,7 @@ BEGIN {
 }
 
 subtest 'base' => sub {
-    plan tests => 16;
+    plan tests => 19;
 
     my $packet = Net::EGTS::Packet::Response->new;
     isa_ok $packet, 'Net::EGTS::Packet::Response';
@@ -42,4 +42,9 @@ subtest 'base' => sub {
     is $packet->PID, 0, 'Packet Identifier';
     is $packet->PT,  EGTS_PT_RESPONSE, 'Packet Type';
     is $packet->HCS, 20, 'Header Check Sum';
+
+    is $packet->RPID,   undef, 'Response Packet ID';
+    is $packet->PR,     undef, 'Processing Result';
+    is $packet->SDR,    undef, 'Service Data Record';
+
 };
