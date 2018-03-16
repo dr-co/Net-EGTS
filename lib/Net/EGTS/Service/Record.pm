@@ -204,8 +204,8 @@ Parse all records from packet Service Frame Data
 
 =cut
 
-sub decode_all($) {
-    my ($bin) = @_;
+sub decode_all {
+    my ($class, $bin) = @_;
     use bytes;
 
     my $i = 0;

@@ -6,7 +6,7 @@ use utf8;
 use open qw(:std :utf8);
 use lib qw(lib ../lib);
 
-use Test::More tests    => 4;
+use Test::More tests    => 5;
 
 BEGIN {
     use_ok 'Net::EGTS::Service::Record';
@@ -70,3 +70,28 @@ subtest 'time' => sub {
     is $record->TM,     252531000, 'Time';
     is $record->TMFE,   1, 'Time Field Exists';
 };
+
+subtest 'records_all' => sub {
+    plan tests => 5;
+
+    my $record1 = Net::EGTS::Service::Record->new(
+        SST => EGTS_AUTH_SERVICE,
+        RST => EGTS_AUTH_SERVICE,
+        RD  => 'foo',
+    );
+    isa_ok $record1, 'Net::EGTS::Service::Record';
+
+    my $record2 = Net::EGTS::Service::Record->new(
+        SST => EGTS_AUTH_SERVICE,
+        RST => EGTS_AUTH_SERVICE,
+        RD  => 'bar',
+    );
+    isa_ok $record2, 'Net::EGTS::Service::Record';
+
+    my $bin = join '', map { $_->encode } $record1, $record2;
+
+    my @records = Net::EGTS::Service::Record->decode_all($bin);
+    is @records, 2, 'two records';
+    is $records[0]->RD, $record1->RD, 'RD 1';
+    is $records[1]->RD, $record2->RD, 'RD 2';
+}
