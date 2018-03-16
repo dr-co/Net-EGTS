@@ -32,19 +32,19 @@ our %STATES = (
     # initial
     null        => {
         index   => 0,
-        sub     => \&decode_packet_base,
+        sub     => \&_decode_base,
         next    => [qw(base)]
     },
     # the length of the header is known
     base        => {
         index   => 1,
-        sub     => \&decode_packet_header,
+        sub     => \&_decode_header,
         next    => [qw(header ok)],
     },
     # header complete, process data
     header      => {
         index   => 2,
-        sub     => \&decode_packet_data,
+        sub     => \&_decode_data,
         next    => [qw(ok)],
     },
     # complete
@@ -250,7 +250,7 @@ sub decode {
 }
 
 # Basic header part with header length
-sub decode_packet_base {
+sub _decode_base {
     my ($self, $bin) = @_;
     use bytes;
 
@@ -281,7 +281,7 @@ sub decode_packet_base {
 }
 
 # Complete header with data length
-sub decode_packet_header {
+sub _decode_header {
     my ($self, $bin) = @_;
     use bytes;
 
@@ -312,7 +312,7 @@ sub decode_packet_header {
 }
 
 # Complete packet decode
-sub decode_packet_data {
+sub _decode_data {
     my ($self, $bin) = @_;
     use bytes;
 
