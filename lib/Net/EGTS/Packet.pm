@@ -397,35 +397,33 @@ sub as_debug {
     my @bytes = ((unpack('B*', $self->bin)) =~ m{.{8}}g);
 
     my @str;
-    push @str => sprintf('PRV:    %s',      shift @bytes);
-    push @str => sprintf('SKID:   %s',      shift @bytes);
-    push @str => sprintf('FLAGS:  %s',      shift @bytes);
-    push @str => sprintf('HL:     %s',      shift @bytes);
-    push @str => sprintf('HE:     %s',      shift @bytes);
-    push @str => sprintf('FDL:    %s %s',   shift @bytes, shift @bytes);
-    push @str => sprintf('PID:    %s %s',   shift @bytes, shift @bytes);
-    push @str => sprintf('PT:     %s',      shift @bytes);
+    push @str => sprintf('PRV:    %s',      splice @bytes, 0 => 1);
+    push @str => sprintf('SKID:   %s',      splice @bytes, 0 => 1);
+    push @str => sprintf('FLAGS:  %s',      splice @bytes, 0 => 1);
+    push @str => sprintf('HL:     %s',      splice @bytes, 0 => 1);
+    push @str => sprintf('HE:     %s',      splice @bytes, 0 => 1);
+    push @str => sprintf('FDL:    %s %s',   splice @bytes, 0 => 2);
+    push @str => sprintf('PID:    %s %s',   splice @bytes, 0 => 2);
+    push @str => sprintf('PT:     %s',      splice @bytes, 0 => 1);
 
-    push @str => sprintf('PRA:    %s %s',  shift @bytes, shift @bytes)
+    push @str => sprintf('PRA:    %s %s',   splice @bytes, 0 => 2)
         if defined $self->PRA;
-    push @str => sprintf('RCA:    %s %s',  shift @bytes, shift @bytes)
+    push @str => sprintf('RCA:    %s %s',   splice @bytes, 0 => 2)
         if defined $self->RCA;
-    push @str => sprintf('TTL:    %s',     shift @bytes)
+    push @str => sprintf('TTL:    %s',      splice @bytes, 0 => 1)
         if defined $self->TTL;
 
-    push @str => sprintf('HCS:    %s',     shift @bytes);
+    push @str => sprintf('HCS:    %s',      splice @bytes, 0 => 1);
 
     if( @bytes ) {
-        my @cfrcs = reverse (pop(@bytes), pop(@bytes));
-
-        my $it = natatime 4, @bytes;
+        my $it = natatime 4, splice @bytes, 0 => -2;
         my @chunks;
         while (my @vals = $it->()) {
             push @chunks, join(' ', @vals);
         }
 
         push @str => sprintf('SFRD:   %s', join("\n        ", @chunks));
-        push @str => sprintf('SFRCS:  %s %s', @cfrcs);
+        push @str => sprintf('SFRCS:  %s %s', splice @bytes, 0 => 2);
     }
 
     return join "\n", @str;
