@@ -277,7 +277,7 @@ sub decode {
         # all complete
         return $self if $self->state eq 'ok';
 
-        # goto next step
+        # skip completed steps
         next unless $name eq $self->state;
 
         # need more data
