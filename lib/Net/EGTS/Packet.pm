@@ -70,7 +70,7 @@ has ENA         => is => 'rw', isa => 'BIT2', default => 0x00;
 # Compressed
 has CMP         => is => 'rw', isa => 'BIT1', default => 0x0;
 # Priority
-has PRIORITY    => is => 'rw', isa => 'Priority', coerce => 1, default => 0x00;
+has PRIORITY    => is => 'rw', isa => 'BIT2', default => 0x00;
 
 # Header Length
 has HL          =>
