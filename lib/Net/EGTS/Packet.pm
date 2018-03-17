@@ -429,23 +429,23 @@ sub as_debug {
     my @bytes = ((unpack('B*', $self->bin)) =~ m{.{8}}g);
 
     my @str;
-    push @str => sprintf('PRV:    %s',      splice @bytes, 0 => 1);
-    push @str => sprintf('SKID:   %s',      splice @bytes, 0 => 1);
-    push @str => sprintf('FLAGS:  %s',      splice @bytes, 0 => 1);
-    push @str => sprintf('HL:     %s',      splice @bytes, 0 => 1);
-    push @str => sprintf('HE:     %s',      splice @bytes, 0 => 1);
-    push @str => sprintf('FDL:    %s %s',   splice @bytes, 0 => 2);
-    push @str => sprintf('PID:    %s %s',   splice @bytes, 0 => 2);
-    push @str => sprintf('PT:     %s',      splice @bytes, 0 => 1);
+    push @str => sprintf('PRV:    %s',      splice @bytes, 0 => usize('C'));
+    push @str => sprintf('SKID:   %s',      splice @bytes, 0 => usize('C'));
+    push @str => sprintf('FLAGS:  %s',      splice @bytes, 0 => usize('C'));
+    push @str => sprintf('HL:     %s',      splice @bytes, 0 => usize('C'));
+    push @str => sprintf('HE:     %s',      splice @bytes, 0 => usize('C'));
+    push @str => sprintf('FDL:    %s %s',   splice @bytes, 0 => usize('S'));
+    push @str => sprintf('PID:    %s %s',   splice @bytes, 0 => usize('S'));
+    push @str => sprintf('PT:     %s',      splice @bytes, 0 => usize('C'));
 
-    push @str => sprintf('PRA:    %s %s',   splice @bytes, 0 => 2)
+    push @str => sprintf('PRA:    %s %s',   splice @bytes, 0 => usize('S'))
         if defined $self->PRA;
-    push @str => sprintf('RCA:    %s %s',   splice @bytes, 0 => 2)
+    push @str => sprintf('RCA:    %s %s',   splice @bytes, 0 => usize('S'))
         if defined $self->RCA;
-    push @str => sprintf('TTL:    %s',      splice @bytes, 0 => 1)
+    push @str => sprintf('TTL:    %s',      splice @bytes, 0 => usize('C'))
         if defined $self->TTL;
 
-    push @str => sprintf('HCS:    %s',      splice @bytes, 0 => 1);
+    push @str => sprintf('HCS:    %s',      splice @bytes, 0 => usize('C'));
 
     if( @bytes ) {
         my $it = natatime 4, splice @bytes, 0 => -2;

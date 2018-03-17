@@ -84,6 +84,18 @@ has time        =>
         return new2time $self->TM;
     },
 ;
+# Array of decoded subrecords
+has subrecords     =>
+    is          => 'rw',
+    isa         => 'ArrayRef[Net::EGTS::SubRecord]',
+    lazy        => 1,
+    builder     => sub {
+        my ($self) = @_;
+        return [] unless defined $self->SFRD;
+        return [] unless length  $self->SFRD;
+        return Net::EGTS::SubRecord->decode_all( $self->SFRD );
+    },
+;
 
 around BUILDARGS => sub {
     my $orig  = shift;
@@ -240,19 +252,19 @@ sub as_debug {
     my @bytes = ((unpack('B*', $self->bin)) =~ m{.{8}}g);
 
     my @str;
-    push @str => sprintf('RL:     %s  %s',      splice @bytes, 0 => 2);
-    push @str => sprintf('RN:     %s  %s',      splice @bytes, 0 => 2);
-    push @str => sprintf('FLAGS:  %s',          splice @bytes, 0 => 1);
+    push @str => sprintf('RL:     %s  %s',      splice @bytes, 0 => usize('S'));
+    push @str => sprintf('RN:     %s  %s',      splice @bytes, 0 => usize('S'));
+    push @str => sprintf('FLAGS:  %s',          splice @bytes, 0 => usize('C'));
 
-    push @str => sprintf('OID:    %s %s %s %s', splice @bytes, 0 => 4)
+    push @str => sprintf('OID:    %s %s %s %s', splice @bytes, 0 => usize('L'))
         if defined $self->OID;
-    push @str => sprintf('EVID:   %s %s %s %s', splice @bytes, 0 => 4)
+    push @str => sprintf('EVID:   %s %s %s %s', splice @bytes, 0 => usize('L'))
         if defined $self->EVID;
-    push @str => sprintf('TM:     %s %s %s %s', splice @bytes, 0 => 4)
+    push @str => sprintf('TM:     %s %s %s %s', splice @bytes, 0 => usize('L'))
         if defined $self->TM;
 
-    push @str => sprintf('SST:    %s',          splice @bytes, 0 => 1);
-    push @str => sprintf('RST:    %s',          splice @bytes, 0 => 1);
+    push @str => sprintf('SST:    %s',          splice @bytes, 0 => usize('C'));
+    push @str => sprintf('RST:    %s',          splice @bytes, 0 => usize('C'));
 
     my $it = natatime 4, @bytes;
     my @chunks;
