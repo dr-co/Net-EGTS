@@ -217,14 +217,12 @@ sub decode_all {
     my ($class, $bin) = @_;
     use bytes;
 
-    my $i = 0;
     my @result;
     while( my $length = length $bin ) {
-        my $record = Net::EGTS::Record->new(RN => $i)->decode( \$bin );
+        my $record = Net::EGTS::Record->new->decode( \$bin );
         die 'Something wrong in records decode' unless $record;
 
         push @result, $record;
-        ++$i;
     }
 
     return wantarray ? @result : \@result;
