@@ -42,7 +42,7 @@ around BUILDARGS => sub {
 augment as_debug => sub {
     my ($self) = @_;
 
-    my @bytes = ((unpack('B*', substr $self->bin, usize('CS'))) =~ m{.{8}}g);
+    my @bytes = ((unpack('B*', $self->SRD)) =~ m{.{8}}g);
 
     my @str;
     push @str => sprintf('CRN:    %s  %s',      splice @bytes, 0 => usize('S'));

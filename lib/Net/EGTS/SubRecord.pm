@@ -181,8 +181,9 @@ sub as_debug {
     push @str => sprintf('SRL:    %s  %s',      splice @bytes, 0 => usize('S'));
 
     if( my @qualify = inner() ) {
-        push @str => sprintf('SRD =>');
+        push @str => sprintf('SRD  =>');
         push @str, @qualify;
+        push @str => sprintf('<======');
     } else {
         my $it = natatime 4, @bytes;
         my @chunks;
