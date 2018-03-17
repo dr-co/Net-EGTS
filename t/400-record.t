@@ -72,12 +72,13 @@ subtest 'time' => sub {
 };
 
 subtest 'decode_all' => sub {
-    plan tests => 5;
+    plan tests => 7;
 
     my $record1 = Net::EGTS::Record->new(
         SST => EGTS_AUTH_SERVICE,
         RST => EGTS_AUTH_SERVICE,
         RD  => 'foo',
+        RN  => 0,
     );
     isa_ok $record1, 'Net::EGTS::Record';
 
@@ -85,6 +86,7 @@ subtest 'decode_all' => sub {
         SST => EGTS_AUTH_SERVICE,
         RST => EGTS_AUTH_SERVICE,
         RD  => 'bar',
+        RN  => 1,
     );
     isa_ok $record2, 'Net::EGTS::Record';
 
@@ -92,6 +94,8 @@ subtest 'decode_all' => sub {
 
     my @records = Net::EGTS::Record->decode_all($bin);
     is @records, 2, 'two records';
-    is $records[0]->RD, $record1->RD, 'RD 1';
-    is $records[1]->RD, $record2->RD, 'RD 2';
+    is $records[0]->RD, $record1->RD,   'RD 1';
+    is $records[0]->RN, 0,              'RN 1';
+    is $records[1]->RD, $record2->RD,   'RD 2';
+    is $records[1]->RN, 1,              'RN 2';
 }
