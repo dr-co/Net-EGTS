@@ -32,7 +32,7 @@ has SRL          =>
 # Subrecord Data
 has SRD         =>
     is          => 'rw',
-    isa         => 'BINARY',
+    isa         => 'Maybe[BINARY]',
     trigger     => sub {
          my ($self, $value, $old) = @_;
          die 'Subrecord Data too long'  if length($value) > 65495;
