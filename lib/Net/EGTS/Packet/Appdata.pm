@@ -12,22 +12,14 @@ use Net::EGTS::Types;
 use Net::EGTS::Codes;
 
 # Service Data Record
-has SDR         =>
-    is          => 'rw',
-    isa         => 'Maybe[BINARY]',
-    lazy        => 1,
-    builder     => sub {
-        my ($self) = @_;
-        return unless defined $self->SFRD;
-        return unless length  $self->SFRD;
-        return $self->SFRD,
-    },
-;
+has SDR         => is => 'rw', isa => 'Maybe[BINARY]';
 
 after 'decode' => sub {
     my ($self) = @_;
     die 'Packet not EGTS_PT_APPDATA type'
         unless $self->PT == EGTS_PT_APPDATA;
+
+    $self->SDR( $self->SFRD );
 };
 
 around BUILDARGS => sub {

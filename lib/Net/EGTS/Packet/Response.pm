@@ -26,9 +26,10 @@ after 'decode' => sub {
     return unless defined $self->SFRD;
     return unless length  $self->SFRD;
 
-    $self->RPID( unpack 'S' => substr( $self->SFRD, 0 => 2 ) );
-    $self->PR(   unpack 'C' => substr( $self->SFRD, 2 => 1 ) );
-    $self->SDR(                substr( $self->SFRD, 3      ) );
+    my $bin = $self->SFRD;
+    $self->RPID( $self->take(\$bin => 'S') );
+    $self->PR(   $self->take(\$bin => 'C') );
+    $self->SDR(  $self->take(\$bin => 'a*') );
 };
 
 around BUILDARGS => sub {
