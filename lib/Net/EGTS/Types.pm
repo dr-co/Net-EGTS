@@ -7,7 +7,6 @@ use Mouse::Util::TypeConstraints;
 
 subtype 'BOOLEAN',  as 'Bool';
 subtype 'BYTE',     as 'Int',   where { 0 <= $_ && $_ < 2 ** 8 };
-subtype 'BYTE3',    as 'Int',   where { 0 <= $_ && $_ < 2 ** 24 };
 subtype 'USHORT',   as 'Int',   where { 0 <= $_ && $_ < 2 ** 16 };
 subtype 'UINT',     as 'Int',   where { 0 <= $_ && $_ < 2 ** 32 };
 subtype 'ULONG',    as 'Int',   where { 0 <= $_ && $_ < 2 ** 64 };
@@ -17,6 +16,8 @@ subtype 'FLOAT',    as 'Num';
 subtype 'DOUBLE',   as 'Num';
 subtype 'STRING',   as 'Str';
 subtype 'BINARY',   as 'Str';
+
+subtype 'BINARY3',  as 'Str',   where { length($_) == 3 };
 
 subtype 'BIT1',     as 'Bool';
 subtype 'BIT2',     as 'Int',   where { 0 <= $_ && $_ < 2 ** 2 };
