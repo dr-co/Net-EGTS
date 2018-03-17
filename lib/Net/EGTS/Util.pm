@@ -117,11 +117,9 @@ Return size in bytes of pack/unpack mask
 =cut
 
 sub usize {
-    return
-        $_[0] =~ m{C}i  ? 1 :
-        $_[0] =~ m{B8}i ? 1 :
-        $_[0] =~ m{S}i  ? 2 :
-        $_[0] =~ m{L}i  ? 4 : confess 'Unknown mask: ' . $_[0]
-    ;
+    my ($mask) = @_;
+    use bytes;
+    return length pack $mask => 0;
 }
+
 1;
