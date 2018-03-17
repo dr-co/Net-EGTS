@@ -5,6 +5,9 @@ use namespace::autoclean;
 use Mouse;
 extends qw(Net::EGTS::Packet);
 
+use Carp;
+use List::MoreUtils     qw(natatime);
+
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
 
@@ -32,6 +35,25 @@ around BUILDARGS => sub {
     my $orig    = shift;
     my $class   = shift;
     return $class->$orig( @_, PT => EGTS_PT_RESPONSE );
+};
+
+augment as_debug => sub {
+    my ($self) = @_;
+
+    my @bytes = ((unpack('B*', $self->SFRD)) =~ m{.{8}}g);
+
+    my @str;
+    push @str => sprintf('RPID:    %s %s',       splice @bytes, 0 => usize('S'));
+    push @str => sprintf('PR:      %s',          splice @bytes, 0 => usize('C'));
+
+    my $it = natatime 4, @bytes;
+    my @chunks;
+    while (my @vals = $it->()) {
+        push @chunks, join(' ', @vals);
+    }
+    push @str => sprintf('SDR:    %s', join("\n        ", @chunks));
+
+    return @str;
 };
 
 __PACKAGE__->meta->make_immutable();

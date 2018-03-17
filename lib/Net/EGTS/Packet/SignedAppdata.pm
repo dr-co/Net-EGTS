@@ -5,6 +5,9 @@ use namespace::autoclean;
 use Mouse;
 extends qw(Net::EGTS::Packet);
 
+use Carp;
+use List::MoreUtils     qw(natatime);
+
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
 
@@ -32,6 +35,31 @@ around BUILDARGS => sub {
     my $orig    = shift;
     my $class   = shift;
     return $class->$orig( @_, PT => EGTS_PT_SIGNED_APPDATA );
+};
+
+augment as_debug => sub {
+    my ($self) = @_;
+
+    my @bytes = ((unpack('B*', $self->SFRD)) =~ m{.{8}}g);
+
+    my @str;
+    push @str => sprintf('SIGL:    %s %s',  splice @bytes, 0 => usize('S'));
+
+    my $it1 = natatime 4, splice @bytes, 0 => $self->SIGL;
+    my @chunks1;
+    while (my @vals = $it1->()) {
+        push @chunks1, join(' ', @vals);
+    }
+    push @str => sprintf('SIGD:    %s', join("\n        ", @chunks1));
+
+    my $it2 = natatime 4, @bytes;
+    my @chunks2;
+    while (my @vals = $it2->()) {
+        push @chunks2, join(' ', @vals);
+    }
+    push @str => sprintf('SDR:    %s', join("\n        ", @chunks2));
+
+    return @str;
 };
 
 __PACKAGE__->meta->make_immutable();

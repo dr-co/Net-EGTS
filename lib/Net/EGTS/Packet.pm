@@ -448,13 +448,20 @@ sub as_debug {
     push @str => sprintf('HCS:    %s',      splice @bytes, 0 => usize('C'));
 
     if( @bytes ) {
-        my $it = natatime 4, splice @bytes, 0 => -2;
-        my @chunks;
-        while (my @vals = $it->()) {
-            push @chunks, join(' ', @vals);
+
+        if( my @qualify = inner() ) {
+            push @str => sprintf('SFRD =>');
+            push @str, @qualify;
+            push @str => sprintf('<======');
+        } else {
+            my $it = natatime 4, splice @bytes, 0 => -2;
+            my @chunks;
+            while (my @vals = $it->()) {
+                push @chunks, join(' ', @vals);
+            }
+            push @str => sprintf('SFRD:   %s', join("\n        ", @chunks));
         }
 
-        push @str => sprintf('SFRD:   %s', join("\n        ", @chunks));
         push @str => sprintf('SFRCS:  %s %s', splice @bytes, 0 => 2);
     }
 
