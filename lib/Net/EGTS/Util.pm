@@ -15,6 +15,8 @@ our @EXPORT = qw(
     str2time time2new new2time
     dumper_bitstring
     usize
+    lat2mod mod2lat
+    lon2mod mod2lon
 );
 
 use constant TIMESTAMP_20100101_000000_UTC  => 1262304000;
@@ -116,10 +118,52 @@ Return size in bytes of pack/unpack mask
 
 =cut
 
-sub usize {
+sub usize($) {
     my ($mask) = @_;
     use bytes;
     return length pack $mask => 0;
+}
+
+=head2 lat2mod $latitude
+
+Module from latitude
+
+=cut
+
+sub lat2mod($) {
+    return int( abs( $_[0] )  / 90  * 0xffffffff );
+}
+
+=head2 mod2lat $module, $sign
+
+Latitude from module and sign
+
+=cut
+
+sub mod2lat($$) {
+    my ($module, $sign) = @_;
+    return $_[0] / 0xffffffff * 90 * (- $sign);
+}
+
+=head2 lon2mod $longitude
+
+Module from longitude
+
+=cut
+
+sub lon2mod($) {
+    return int( abs( $_[0] )  / 180 * 0xffffffff );
+}
+
+=head2 mod2lon $module, $sign
+
+Longitude from module and sign.
+
+=cut
+
+sub mod2lon($$) {
+    my ($module, $sign) = @_;
+    return $_[0] / 0xffffffff * 180 * (- $sign);
 }
 
 1;
