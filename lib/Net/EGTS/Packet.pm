@@ -425,6 +425,7 @@ Return human readable string
 
 sub as_debug {
     my ($self) = @_;
+    use bytes;
 
     my @bytes = ((unpack('B*', $self->bin)) =~ m{.{8}}g);
 

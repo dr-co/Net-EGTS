@@ -37,6 +37,7 @@ around BUILDARGS => sub {
 
 augment as_debug => sub {
     my ($self) = @_;
+    use bytes;
 
     my @bytes = ((unpack('B*', $self->SRD)) =~ m{.{8}}g);
 
