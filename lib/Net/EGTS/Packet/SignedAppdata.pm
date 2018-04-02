@@ -29,7 +29,19 @@ after 'decode' => sub {
     my $bin = $self->SFRD;
     $self->SIGL( $self->take(\$bin => 'S') );
     $self->SIGD( $self->take(\$bin => 'a*' => $self->SIGL ) );
-    $self->SDR(  $self->take(\$bin => 'a*') );
+    $self->SDR(  $self->take(\$bin => 'a*', length($bin)) );
+};
+
+before 'encode' => sub {
+    my ($self) = @_;
+    die 'Packet not EGTS_PT_SIGNED_APPDATA type'
+        unless $self->PT == EGTS_PT_SIGNED_APPDATA;
+
+    my $bin = pack 'S'   => $self->SIGL;
+    $bin   .= pack 'a*'  => $self->SIGD     if defined $self->SIGD;
+    $bin   .= pack 'a*'  => $self->SDR      if defined $self->SDR;
+
+    $self->SFRD( $bin );
 };
 
 around BUILDARGS => sub {

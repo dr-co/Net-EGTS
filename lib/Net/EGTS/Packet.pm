@@ -63,15 +63,15 @@ has SKID        => is => 'rw', isa => 'BYTE', default => 0;
 
 # Flags:
 # Prefix
-has PRF         => is => 'rw', isa => 'BIT2', default => 0x00;
+has PRF         => is => 'rw', isa => 'BIT2', default => 0b00;
 # Route
-has RTE         => is => 'rw', isa => 'BIT1', default => 0x0;
+has RTE         => is => 'rw', isa => 'BIT1', default => 0b0;
 # Encryption Algorithm
-has ENA         => is => 'rw', isa => 'BIT2', default => 0x00;
+has ENA         => is => 'rw', isa => 'BIT2', default => 0b00;
 # Compressed
-has CMP         => is => 'rw', isa => 'BIT1', default => 0x0;
+has CMP         => is => 'rw', isa => 'BIT1', default => 0b0;
 # Priority
-has PRIORITY    => is => 'rw', isa => 'BIT2', default => 0x00;
+has PRIORITY    => is => 'rw', isa => 'BIT2', default => 0b00;
 
 # Header Length
 has HL          =>
@@ -95,8 +95,11 @@ has FDL         =>
     isa         => 'USHORT',
     lazy        => 1,
     builder     => sub {
+        my ($self) = @_;
         use bytes;
-        return length $_[0]->SFRD;
+        return 0 unless defined $self->SFRD;
+        return 0 unless length  $self->SFRD;
+        return length $self->SFRD;
     },
 ;
 # Packet Identifier
@@ -142,7 +145,8 @@ has SFRD        =>
     default     => '',
     trigger     => sub {
          my ($self, $value, $old) = @_;
-         die 'Service Frame Data too long' if length($value) > 65517;
+         die 'Service Frame Data too long'
+            if defined($value) && length($value) > 65517;
     }
 ;
 # Service Frame Data Check Sum

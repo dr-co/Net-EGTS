@@ -32,6 +32,17 @@ after 'decode' => sub {
     $self->SDR(  $self->take(\$bin => 'a*') );
 };
 
+before 'encode' => sub {
+    my ($self) = @_;
+    die 'Packet not EGTS_PT_RESPONSE type'
+        unless $self->PT == EGTS_PT_RESPONSE;
+
+    my $bin = pack 'S C' => $self->RPID, $self->PR;
+    $bin   .= pack 'a*'  => $self->SDR              if defined $self->SDR;
+
+    $self->SFRD( $bin );
+};
+
 around BUILDARGS => sub {
     my $orig    = shift;
     my $class   = shift;

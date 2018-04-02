@@ -22,7 +22,7 @@ has DSCR        =>
     trigger     => sub {
         my ($self, $value, $old) = @_;
         use bytes;
-        die 'Description too long' if length($value) > 255;
+        die 'Description too long' if defined($value) && length($value) > 255;
     }
 ;
 
@@ -42,7 +42,10 @@ before 'encode' => sub {
     die 'SubRecord not EGTS_SR_DISPATCHER_IDENTITY type'
         unless $self->SRT == EGTS_SR_DISPATCHER_IDENTITY;
 
-    $self->SRD( pack 'C L a*' => $self->DT, $self->DID, $self->DSCR );
+    my $bin = pack 'C L' => $self->DT, $self->DID;
+    $bin   .= pack 'a*'  => $self->DSCR             if defined $self->DSCR;
+
+    $self->SRD( $bin );
 };
 
 around BUILDARGS => sub {

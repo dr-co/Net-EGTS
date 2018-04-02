@@ -22,6 +22,14 @@ after 'decode' => sub {
     $self->SDR( $self->SFRD );
 };
 
+before 'encode' => sub {
+    my ($self) = @_;
+    die 'Packet not EGTS_PT_APPDATA type'
+        unless $self->PT == EGTS_PT_APPDATA;
+
+    $self->SFRD( $self->SDR );
+};
+
 around BUILDARGS => sub {
     my $orig    = shift;
     my $class   = shift;
