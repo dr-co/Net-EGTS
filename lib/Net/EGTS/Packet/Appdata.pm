@@ -10,6 +10,7 @@ use List::MoreUtils     qw(natatime);
 
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
+use Net::EGTS::Util     qw(usize);
 
 # Service Data Record
 has SDR         => is => 'rw', isa => 'Maybe[BINARY]';

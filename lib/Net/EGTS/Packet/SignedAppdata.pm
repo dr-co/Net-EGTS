@@ -10,6 +10,7 @@ use List::MoreUtils     qw(natatime);
 
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
+use Net::EGTS::Util     qw(usize);
 
 # Signature Length
 has SIGL        => is => 'rw', isa => 'SHORT', default => 0;
