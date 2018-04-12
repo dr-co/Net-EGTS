@@ -16,7 +16,7 @@ BEGIN {
 subtest 'base' => sub {
     plan tests => 19;
 
-    my $packet = Net::EGTS::Packet::Response->new;
+    my $packet = Net::EGTS::Packet::Response->new(RPID => 0, PR => EGTS_PC_OK);
     isa_ok $packet, 'Net::EGTS::Packet::Response';
 
     my $bin = $packet->encode;
@@ -38,13 +38,13 @@ subtest 'base' => sub {
 
     is $packet->HL,  11, 'Header Length';
     is $packet->HE,  0, 'Header Encoding';
-    is $packet->FDL, 0, 'Frame Data Length';
+    is $packet->FDL, 3, 'Frame Data Length';
     is $packet->PID, 0, 'Packet Identifier';
     is $packet->PT,  EGTS_PT_RESPONSE, 'Packet Type';
-    is $packet->HCS, 20, 'Header Check Sum';
+    is $packet->HCS, 80, 'Header Check Sum';
 
-    is $packet->RPID,   undef, 'Response Packet ID';
-    is $packet->PR,     undef, 'Processing Result';
+    is $packet->RPID,   0, 'Response Packet ID';
+    is $packet->PR,     EGTS_PC_OK, 'Processing Result';
     is $packet->SDR,    undef, 'Service Data Record';
 
 };

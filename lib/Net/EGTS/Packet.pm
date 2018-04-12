@@ -224,6 +224,18 @@ sub take {
     return unpack $mask => $chunk;
 }
 
+# Helper to get portion of data
+sub nip {
+    my ($self, $bin, $mask, $length) = @_;
+    use bytes;
+
+    $length //= usize($mask);
+    confess "Can`t get chunk of length $length" if $length > length $$bin;
+
+    my $chunk = substr $$bin, 0 => $length, '';
+    return unpack $mask => $chunk;
+}
+
 # Goto next decode state
 sub next {
     my ($self, $state, $need) = @_;
@@ -469,6 +481,11 @@ sub as_debug {
 
         push @str => sprintf('SFRCS:  %s %s', splice @bytes, 0 => 2);
     }
+
+    push @str, sprintf '(Data %d bytes. Total %d bytes.)',
+        $self->FDL,
+        length $self->bin
+    ;
 
     return join "\n", @str;
 }

@@ -73,6 +73,18 @@ sub take {
     return unpack $mask => $chunk;
 }
 
+# Helper to get portion of data
+sub nip {
+    my ($self, $bin, $mask, $length) = @_;
+    use bytes;
+
+    $length //= usize($mask);
+    confess "Can`t get chunk of length $length" if $length > length $$bin;
+
+    my $chunk = substr $$bin, 0 => $length, '';
+    return unpack $mask => $chunk;
+}
+
 =head2 encode
 
 Build subrecord as binary

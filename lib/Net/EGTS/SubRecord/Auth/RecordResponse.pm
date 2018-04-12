@@ -21,8 +21,8 @@ after 'decode' => sub {
 
     my $bin = $self->SRD;
 
-    $self->CRN( $self->take(\$bin => 'S') );
-    $self->RST( $self->take(\$bin => 'C') );
+    $self->CRN( $self->nip(\$bin => 'S') );
+    $self->RST( $self->nip(\$bin => 'C') );
 };
 
 before 'encode' => sub {

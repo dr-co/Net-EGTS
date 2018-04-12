@@ -28,9 +28,9 @@ after 'decode' => sub {
     return unless length  $self->SFRD;
 
     my $bin = $self->SFRD;
-    $self->SIGL( $self->take(\$bin => 'S') );
-    $self->SIGD( $self->take(\$bin => 'a*' => $self->SIGL ) );
-    $self->SDR(  $self->take(\$bin => 'a*', length($bin)) );
+    $self->SIGL( $self->nip(\$bin => 'S') );
+    $self->SIGD( $self->nip(\$bin => 'a*' => $self->SIGL ) );
+    $self->SDR(  $self->nip(\$bin => 'a*' => length($bin)) );
 };
 
 before 'encode' => sub {

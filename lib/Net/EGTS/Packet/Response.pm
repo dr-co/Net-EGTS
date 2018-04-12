@@ -21,6 +21,8 @@ has SDR         => is => 'rw', isa => 'Maybe[BINARY]';
 
 after 'decode' => sub {
     my ($self) = @_;
+    use bytes;
+
     die 'Packet not EGTS_PT_RESPONSE type'
         unless $self->PT == EGTS_PT_RESPONSE;
 
@@ -28,13 +30,15 @@ after 'decode' => sub {
     return unless length  $self->SFRD;
 
     my $bin = $self->SFRD;
-    $self->RPID( $self->take(\$bin => 'S') );
-    $self->PR(   $self->take(\$bin => 'C') );
-    $self->SDR(  $self->take(\$bin => 'a*') );
+    $self->RPID( $self->nip(\$bin => 'S') );
+    $self->PR(   $self->nip(\$bin => 'C') );
+    $self->SDR(  $self->nip(\$bin => 'a*' => length($bin)) );
 };
 
 before 'encode' => sub {
     my ($self) = @_;
+    use bytes;
+
     die 'Packet not EGTS_PT_RESPONSE type'
         unless $self->PT == EGTS_PT_RESPONSE;
 

@@ -18,7 +18,7 @@ after 'decode' => sub {
         unless $self->SRT == EGTS_SR_RESULT_CODE;
 
     my $bin = $self->SRD;
-    $self->RCD( $self->take(\$bin => 'C') );
+    $self->RCD( $self->nip(\$bin => 'C') );
 };
 
 before 'encode' => sub {

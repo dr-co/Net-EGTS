@@ -32,9 +32,9 @@ after 'decode' => sub {
         unless $self->SRT == EGTS_SR_DISPATCHER_IDENTITY;
 
     my $bin = $self->SRD;
-    $self->DT(  $self->take(\$bin => 'C') );
-    $self->DID( $self->take(\$bin => 'L') );
-    $self->DSCR( $self->take(\$bin => 'a*', length($bin)) );
+    $self->DT(   $self->nip(\$bin => 'C') );
+    $self->DID(  $self->nip(\$bin => 'L') );
+    $self->DSCR( $self->nip(\$bin => 'a*' => length($bin)) );
 };
 
 before 'encode' => sub {

@@ -38,10 +38,10 @@ subtest 'base' => sub {
 
     is $packet->HL,  11, 'Header Length';
     is $packet->HE,  0, 'Header Encoding';
-    is $packet->FDL, 0, 'Frame Data Length';
+    is $packet->FDL, 2, 'Frame Data Length';
     is $packet->PID, 0, 'Packet Identifier';
     is $packet->PT,  EGTS_PT_SIGNED_APPDATA, 'Packet Type';
-    is $packet->HCS, 118, 'Header Check Sum';
+    is $packet->HCS, 225, 'Header Check Sum';
 
     is $packet->SIGL,   0,     'Signature Length';
     is $packet->SIGD,   undef, 'Signature Data';
