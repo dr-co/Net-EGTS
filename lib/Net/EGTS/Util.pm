@@ -9,10 +9,11 @@ use Carp;
 use Digest::CRC     qw();
 use Date::Parse     qw();
 use List::MoreUtils qw(natatime any);
+use POSIX           qw();
 
 our @EXPORT = qw(
     crc8 crc16
-    str2time time2new new2time
+    str2time time2new new2time strftime
     dumper_bitstring
     usize
     lat2mod mod2lat
@@ -57,6 +58,16 @@ sub crc16($) {
     );
     $ctx->add($_[0]);
     return $ctx->digest;
+}
+
+=head2 strftime $format, time
+
+Return formatted string.
+
+=cut
+
+sub strftime {
+    POSIX::strftime @_;
 }
 
 =head2 str2time $str
