@@ -6,7 +6,9 @@ use Mouse;
 
 use Carp;
 use List::MoreUtils     qw(natatime);
+use Module::Load        qw(load);
 
+use Net::EGTS::Codes;
 use Net::EGTS::Util     qw(usize);
 use Net::EGTS::Types;
 
@@ -15,6 +17,14 @@ use Net::EGTS::Types;
 Net::EGTS::SubRecord - SubRecord common part
 
 =cut
+
+# Packet types and classes
+our %TYPES = (
+    EGTS_SR_RECORD_RESPONSE,        'Net::EGTS::SubRecord::Auth::RecordResponse',
+    EGTS_SR_DISPATCHER_IDENTITY,    'Net::EGTS::SubRecord::Auth::DispatcherIdentity',
+    EGTS_SR_RESULT_CODE,            'Net::EGTS::SubRecord::Auth::ResultCode',
+    EGTS_SR_POS_DATA,               'Net::EGTS::SubRecord::Teledata::PosData',
+);
 
 # Subrecord Туре
 has SRT         => is => 'rw', isa => 'BYTE';
@@ -122,40 +132,6 @@ sub decode {
     return $self;
 }
 
-#sub egts_decode_sr {
-#    my ($bin) = @_;
-#    use bytes;
-#
-#    my ($srt, $srl) = unpack 'C S', substr $bin, 0 => 3, '';
-#
-#    my $srd = unpack 'a*', substr $bin, 0 => $srl, '';
-#    die 'Subrecord Data truncated' unless $srl == length $srd;
-#
-#    my $sr =
-#        $srt == EGTS_SR_RESULT_CODE                         # 0
-#            ? egts_decode_sr_result_code($srd)              :
-#
-#        $srt ==  EGTS_SR_DISPATCHER_IDENTITY                # 5
-#            ? egts_decode_sr_dispatcher_identity($srd)      :
-#
-#        $srt == EGTS_SR_SERVICE_INFO                        # 8
-#            ? egts_decode_sr_service_info($srd)             :
-#
-#        $srt == EGTS_SR_RECORD_RESPONSE                     # 9
-#            ? egts_decode_sr_record_response($srd)          :
-#
-#        croak 'Unsupported subrecord type'
-#    ;
-#
-#    my %result = (
-#        %$sr,
-#
-#        type    => $srt,
-#        size    => 3 + $srl,
-#    );
-#    return wantarray ? %result : \%result;
-#}
-
 =head2 decode_all \$bin
 
 Parse all subrecords from record Record Data
@@ -168,10 +144,15 @@ sub decode_all {
 
     my @result;
     while( my $length = length $bin ) {
-        my $subrecord = Net::EGTS::SubRecord->new->decode( \$bin );
-        die 'Something wrong in subrecords decode' unless $subrecord;
+        my $type = unpack 'C' => substr $bin, 0 => usize('C');
 
-        push @result, $subrecord;
+        my $subclass = $TYPES{ $type };
+        load $subclass;
+
+        my $self = $subclass->new->decode( \$bin );
+        die 'Something wrong in subrecords decode' unless $self;
+
+        push @result, $self;
     }
 
     return wantarray ? @result : \@result;
@@ -193,17 +174,19 @@ sub as_debug {
     push @str => sprintf('SRT:    %s',          splice @bytes, 0 => usize('C'));
     push @str => sprintf('SRL:    %s  %s',      splice @bytes, 0 => usize('S'));
 
-    if( my @qualify = inner() ) {
-        push @str => sprintf('SRD  =>');
-        push @str, @qualify;
-        push @str => sprintf('<======');
-    } else {
-        my $it = natatime 4, @bytes;
-        my @chunks;
-        while (my @vals = $it->()) {
-            push @chunks, join(' ', @vals);
+    if( @bytes ) {
+        if( my @qualify = inner() ) {
+            push @str => sprintf('SRD  =>');
+            push @str, @qualify;
+            push @str => sprintf('<======');
+        } else {
+            my $it = natatime 4, @bytes;
+            my @chunks;
+            while (my @vals = $it->()) {
+                push @chunks, join(' ', @vals);
+            }
+            push @str => sprintf('SRD:    %s', join("\n        ", @chunks));
         }
-        push @str => sprintf('SRD:    %s', join("\n        ", @chunks));
     }
 
     return join "\n", @str;

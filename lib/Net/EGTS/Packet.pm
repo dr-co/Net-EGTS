@@ -6,14 +6,11 @@ use Mouse;
 
 use Carp;
 use List::MoreUtils     qw(natatime any);
+use Module::Load        qw(load);
 
 use Net::EGTS::Util     qw(crc8 crc16 usize dumper_bitstring);
 use Net::EGTS::Types;
 use Net::EGTS::Codes;
-
-require Net::EGTS::Packet::Response;
-require Net::EGTS::Packet::Appdata;
-require Net::EGTS::Packet::SignedAppdata;
 
 require Net::EGTS::Record;
 
@@ -279,7 +276,11 @@ sub decode {
 
     for my $name ( @STATES ) {
         # all complete
-        return bless $self, $TYPES{ $self->PT } if $self->state eq 'ok';
+        if( $self->state eq 'ok' ) {
+            my $subclass = $TYPES{ $self->PT };
+            load $subclass;
+            return bless $self => $subclass;
+        }
 
         # skip completed steps
         next unless $name eq $self->state;
