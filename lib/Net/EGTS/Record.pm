@@ -32,9 +32,9 @@ has RL          =>
 has RN         => is => 'rw', isa => 'USHORT', default => 0;
 
 # Flags:
-# Source Service On Device)
+# Source Service On Device
 has SSOD        => is => 'rw', isa => 'BIT1', default => 0x0;
-# Recipient Service On Device)
+# Recipient Service On Device
 has RSOD        => is => 'rw', isa => 'BIT1', default => 0x0;
 # Group
 has GRP         => is => 'rw', isa => 'BIT1', default => 0x0;
@@ -72,18 +72,7 @@ has RD          =>
 
 # Record binary
 has bin         => is => 'rw', isa => 'Str',  default => '';
-# TM as timestamp
-has time        =>
-    is          => 'ro',
-    isa         => 'Int',
-    lazy        => 1,
-    builder     => sub {
-        my ($self) = @_;
-        return undef unless         $self->TMFE;
-        return undef unless defined $self->TM;
-        return new2time $self->TM;
-    },
-;
+
 # Array of decoded subrecords
 has subrecords     =>
     is          => 'rw',
@@ -106,9 +95,8 @@ around BUILDARGS => sub {
     my %opts  = @_;
 
     # simple time support
-    if( defined $opts{time} ) {
-        $opts{time} = str2time( $opts{time} );
-        $opts{TM}   = time2new( $opts{time} );
+    if( defined( my $time = delete $opts{time} ) ) {
+        $opts{TM}   = time2new str2time $time;
         $opts{TMFE} = 1 if $opts{TM};
     }
 
