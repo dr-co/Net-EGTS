@@ -61,8 +61,8 @@ augment as_debug => sub {
     my @bytes = ((unpack('B*', $self->SFRD)) =~ m{.{8}}g);
 
     my @str;
-    push @str => sprintf('RPID:    %s %s',       splice @bytes, 0 => usize('S'));
-    push @str => sprintf('PR:      %s',          splice @bytes, 0 => usize('C'));
+    push @str => sprintf('RPID:   %s %s',       splice @bytes, 0 => usize('S'));
+    push @str => sprintf('PR:     %s',          splice @bytes, 0 => usize('C'));
 
     my $it = natatime 4, @bytes;
     my @chunks;
