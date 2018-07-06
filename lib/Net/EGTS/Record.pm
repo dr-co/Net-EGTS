@@ -233,10 +233,10 @@ sub decode_all {
 
     my @result;
     while( my $length = length $bin ) {
-        my $record = Net::EGTS::Record->new->decode( \$bin );
-        die 'Something wrong in records decode' unless $record;
+        my $self = Net::EGTS::Record->new->decode( \$bin );
+        die 'Something wrong in records decode' unless $self;
 
-        push @result, $record;
+        push @result, $self;
     }
 
     return wantarray ? @result : \@result;
