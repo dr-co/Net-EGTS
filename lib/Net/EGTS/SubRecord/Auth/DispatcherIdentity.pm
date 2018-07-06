@@ -52,16 +52,16 @@ around BUILDARGS => sub {
     my $orig    = shift;
     my $class   = shift;
 
+    # simple scalar decoding support
     my $bin   = @_ % 2 ? shift : undef;
     my %opts  = @_;
-
-    $opts{SRT} = EGTS_SR_DISPATCHER_IDENTITY;
 
     # Description is CP-1251
     $opts{DSCR} = Encode::encode('CP1251', $opts{DSCR}) if defined $opts{DSCR};
 
-    return $class->$orig( bin => $bin, %opts ) if $bin;
-    return $class->$orig( %opts );
+    return $class->$orig( bin => $bin, %opts, SRT => EGTS_SR_DISPATCHER_IDENTITY)
+        if $bin;
+    return $class->$orig(              %opts, SRT => EGTS_SR_DISPATCHER_IDENTITY);
 };
 
 augment as_debug => sub {

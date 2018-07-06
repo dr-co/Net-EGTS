@@ -32,7 +32,14 @@ before 'encode' => sub {
 around BUILDARGS => sub {
     my $orig    = shift;
     my $class   = shift;
-    return $class->$orig( @_, SRT => EGTS_SR_RESULT_CODE );
+
+    # simple scalar decoding support
+    my $bin   = @_ % 2 ? shift : undef;
+    my %opts  = @_;
+
+    return $class->$orig( bin => $bin, %opts, SRT => EGTS_SR_RESULT_CODE )
+        if $bin;
+    return $class->$orig(              %opts, SRT => EGTS_SR_RESULT_CODE );
 };
 
 augment as_debug => sub {

@@ -143,7 +143,9 @@ around BUILDARGS => sub {
     my $orig    = shift;
     my $class   = shift;
 
-    my %opts    = (@_ == 1 ? () : @_);
+    # simple scalar decoding support
+    my $bin   = @_ % 2 ? shift : undef;
+    my %opts  = @_;
 
     # Simple helpers for real data:
     if( defined( my $time = delete $opts{time} ) ) {
@@ -186,7 +188,8 @@ around BUILDARGS => sub {
         $opts{DIN} = $order ? 0b10000000 : 0b00000000;
     }
 
-    return $class->$orig( (@_ == 1 ? @_ : %opts), SRT => EGTS_SR_POS_DATA );
+    return $class->$orig( bin => $bin, %opts, SRT => EGTS_SR_POS_DATA ) if $bin;
+    return $class->$orig(              %opts, SRT => EGTS_SR_POS_DATA );
 };
 
 augment as_debug => sub {
