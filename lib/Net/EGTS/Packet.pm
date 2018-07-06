@@ -420,7 +420,7 @@ sub encode {
     $bin .= pack 'C' => $self->HCS;
 
     # Service Frame Data
-    $bin .= $self->SFRD;
+    $bin .= $self->SFRD if defined $self->SFRD;
 
     # Service Frame Data Check Sum
     if( $self->SFRD && $self->FDL ) {
