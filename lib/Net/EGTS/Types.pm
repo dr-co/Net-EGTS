@@ -17,7 +17,7 @@ subtype 'DOUBLE',   as 'Num';
 subtype 'STRING',   as 'Str';
 subtype 'BINARY',   as 'Str';
 
-subtype 'BINARY3',  as 'Str',   where { length($_) == 3 };
+subtype 'BINARY3',  as 'Str';#,   where { length($_) == 3 };
 
 subtype 'BIT1',     as 'Bool';
 subtype 'BIT2',     as 'Int',   where { 0 <= $_ && $_ < 2 ** 2 };
