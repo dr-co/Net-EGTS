@@ -143,7 +143,7 @@ Latitude from module and sign
 
 sub mod2lat($$) {
     my ($module, $sign) = @_;
-    return $_[0] / 0xffffffff * 90 * (- $sign);
+    return $_[0] / 0xffffffff * 90 * ($sign ? -1 : 1);
 }
 
 =head2 lon2mod $longitude
@@ -164,7 +164,7 @@ Longitude from module and sign.
 
 sub mod2lon($$) {
     my ($module, $sign) = @_;
-    return $_[0] / 0xffffffff * 180 * (- $sign);
+    return $_[0] / 0xffffffff * 180 * ($sign ? -1 : 1);
 }
 
 1;
