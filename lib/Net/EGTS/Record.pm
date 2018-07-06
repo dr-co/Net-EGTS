@@ -10,6 +10,8 @@ use List::MoreUtils     qw(natatime);
 use Net::EGTS::Util     qw(str2time time2new new2time usize dumper_bitstring);
 use Net::EGTS::Types;
 
+require  Net::EGTS::SubRecord;
+
 =head1 NAME
 
 Net::EGTS::Record - Record
@@ -80,9 +82,9 @@ has subrecords     =>
     lazy        => 1,
     builder     => sub {
         my ($self) = @_;
-        return [] unless defined $self->SFRD;
-        return [] unless length  $self->SFRD;
-        return Net::EGTS::SubRecord->decode_all( $self->SFRD );
+        return [] unless defined $self->RD;
+        return [] unless length  $self->RD;
+        return Net::EGTS::SubRecord->decode_all( $self->RD );
     },
 ;
 
