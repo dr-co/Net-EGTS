@@ -276,11 +276,7 @@ sub decode {
 
     for my $name ( @STATES ) {
         # all complete
-        if( $self->state eq 'ok' ) {
-            my $subclass = $TYPES{ $self->PT };
-            load $subclass;
-            return bless $self => $subclass;
-        }
+        return $self if $self->state eq 'ok';
 
         # skip completed steps
         next unless $name eq $self->state;
@@ -296,6 +292,13 @@ sub decode {
         # process data
         my $result = $self->$sub( $bin );
         return $result unless ref $result;
+
+        # rebless when known packet type
+        if( $result->state eq 'base' ) {
+            my $subclass = $TYPES{ $self->PT };
+            load $subclass;
+            $self = bless $self => $subclass;
+        }
     }
 
     die 'Unknown packet state: ', $self->state;
