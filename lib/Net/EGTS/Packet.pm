@@ -159,8 +159,6 @@ has records     =>
 #
 #    return $class->$orig(
 #        bin     => $bin,
-##        need    => length($bin),
-##        state   => 'null',
 #        %opts
 #    ) if $bin;
 #    return $class->$orig( %opts );
