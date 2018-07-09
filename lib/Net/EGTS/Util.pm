@@ -132,7 +132,7 @@ Return size in bytes of pack/unpack mask
 sub usize($) {
     my ($mask) = @_;
     use bytes;
-    return 0 if $mask =~ m{^\w\*$};
+    die 'Unknown "*" length' if $mask =~ m{^\w\*$};
     return length pack $mask => 0;
 }
 

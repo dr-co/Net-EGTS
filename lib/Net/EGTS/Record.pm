@@ -200,7 +200,7 @@ sub decode {
     $self->RL( $self->take($bin => 'S') );
     $self->RN( $self->take($bin => 'S') );
 
-    my $flags = $self->take($bin => 'B8');
+    my $flags = $self->take($bin => 'C');
     $self->SSOD( ($flags & 0b10000000) >> 7 );
     $self->RSOD( ($flags & 0b01000000) >> 6 );
     $self->GRP(  ($flags & 0b00100000) >> 5 );
