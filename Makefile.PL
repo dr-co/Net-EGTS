@@ -27,11 +27,11 @@ WriteMakefile(
     META_MERGE => {
         resources => {
             homepage =>
-                'https://github.com/dr-co/***',
+                'https://github.com/dr-co/Net-EGTS',
             repository =>
-                'https://github.com/dr-co/***',
+                'https://github.com/dr-co/Net-EGTS',
             bugtracker =>
-                'https://github.com/dr-co/***/issues',
+                'https://github.com/dr-co/Net-EGTS/issues',
         }
    },
 );
