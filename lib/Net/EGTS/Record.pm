@@ -12,6 +12,8 @@ use Net::EGTS::Types;
 
 require  Net::EGTS::SubRecord;
 
+our $RN    = 0;
+
 =head1 NAME
 
 Net::EGTS::Record - Record
@@ -31,7 +33,17 @@ has RL          =>
 ;
 
 # Record Number
-has RN         => is => 'rw', isa => 'USHORT', default => 0;
+has RN         =>
+    is         => 'rw',
+    isa        => 'USHORT',
+    lazy       => 1,
+    builder    => sub {
+        my $rn = $RN;
+        $RN = 0 unless ++$RN >= 0 && $RN <= 65535;
+        return $rn;
+    }
+;
+
 
 # Flags:
 # Source Service On Device
@@ -43,11 +55,26 @@ has GRP         => is => 'rw', isa => 'BIT1', default => 0x0;
 # Record Processing Priority
 has RPP         => is => 'rw', isa => 'BIT2', default => 0x00;
 # Time Field Exists
-has TMFE        => is => 'rw', isa => 'BIT1', default => 0x0;
+has TMFE        =>
+    is          => 'rw',
+    isa         => 'BIT1',
+    lazy        => 1,
+    builder     => sub{ defined $_[0]->TM ? 0x1 : 0x0 },
+;
 # Event ID Field Exists
-has EVFE        => is => 'rw', isa => 'BIT1', default => 0x0;
+has EVFE        =>
+    is          => 'rw',
+    isa         => 'BIT1',
+    lazy        => 1,
+    builder     => sub{ defined $_[0]->EVID ? 0x1 : 0x0 },
+;
 # Object ID Field Exists
-has OBFE        => is => 'rw', isa => 'BIT1', default => 0x0;
+has OBFE        =>
+    is          => 'rw',
+    isa         => 'BIT1',
+    lazy        => 1,
+    builder     => sub{ defined $_[0]->OID ? 0x1 : 0x0 },
+;
 
 # Optional:
 # Object Identifier
@@ -157,19 +184,19 @@ sub encode {
     # Optional fields
     my @optional;
     if( $self->OBFE || $self->GRP ) {
-        $mask .= ' L ';
+        $mask = join ' ', $mask, 'L';
         push @optional, $self->OID;
     }
     if( $self->EVFE ) {
-        $mask .= ' L ';
+        $mask = join ' ', $mask, 'L';
         push @optional, $self->EVID;
     }
     if( $self->TMFE ) {
-        $mask .= ' L ';
+        $mask = join ' ', $mask, 'L';
         push @optional, $self->TM;
     }
 
-    $mask .= 'C C a*';
+    $mask = join ' ', $mask, 'C C a*';
 
     my $bin = pack $mask =>
         $self->RL, $self->RN,
