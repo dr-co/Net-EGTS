@@ -6,7 +6,7 @@ extends qw(Net::EGTS::SubRecord);
 
 use Carp;
 
-use Net::EGTS::Util     qw(usize time2new str2time lat2mod lon2mod);
+use Net::EGTS::Util     qw(usize time2new str2time lat2mod lon2mod dumper_bitstring);
 use Net::EGTS::Codes;
 
 =head1 NAME
@@ -50,7 +50,7 @@ has FIX         => is => 'rw', isa => 'BIT1', default => 1;
 has VLD         => is => 'rw', isa => 'BIT1', default => 1;
 
 # Speed (lower bits)
-has SPD_LO      => is => 'rw', isa => 'BYTE';
+has SPD_LO      => is => 'rw', isa => 'BYTE', default => 0;
 # Direction the Highest bit
 has DIRH        => is => 'rw', isa => 'BIT1', default => 0;
 # Altitude Sign
@@ -112,6 +112,8 @@ after 'decode' => sub {
 
 before 'encode' => sub {
     my ($self) = @_;
+    use bytes;
+
     die 'SubRecord not EGTS_SR_POS_DATA type'
         unless $self->SRT == EGTS_SR_POS_DATA;
 
@@ -120,21 +122,25 @@ before 'encode' => sub {
     $stupid = ($stupid | 0b10000000) if $self->DIRH;
     $stupid = ($stupid | 0b01000000) if $self->ALTS;
 
-    my $bin = pack 'L L L B8 C C C a3 B8 C' =>
-        $self->NTM, $self->LAT, $self->LONG,
-        sprintf(
-            '%b%b%b%b%b%b%b%b',
-            $self->ALTE, $self->LOHS, $self->LAHS, $self->MV,
-            $self->BB, $self->CS, $self->FIX, $self->VLD,
-        ),
-        $self->SPD_LO, $stupid,
-        $self->DIR,
-        $self->ODM,
-        $self->DIN,
-        $self->SRC,
-    ;
-    $bin .= pack 'a3', $self->ALT  if $self->ALTE;
-    $bin .= pack 'S',  $self->SRCD if defined $self->SRCD;
+    my $bin = '';
+    $bin .= pack 'L'    => $self->NTM;
+    $bin .= pack 'L'    => $self->LAT;
+    $bin .= pack 'L'    => $self->LONG;
+    $bin .= pack 'B8'   => sprintf(
+        '%b%b%b%b%b%b%b%b',
+        $self->ALTE, $self->LOHS, $self->LAHS, $self->MV,
+        $self->BB, $self->CS, $self->FIX, $self->VLD
+    );
+    $bin .= pack 'C'    => $self->SPD_LO;
+    $bin .= pack 'C'    => $stupid;
+    $bin .= pack 'C'    => $self->DIR;
+    $bin .= pack 'a3'   => substr(pack("L", $self->ODM), 0, 3);
+    $bin .= pack 'B8'   => $self->DIN;
+    $bin .= pack 'C'    => $self->SRC;
+    $bin .= pack 'a3'   => substr(pack("L", $self->ALT), 0, 3)
+        if $self->ALTE;
+    $bin .= pack 'S'    => $self->SRCD
+        if defined $self->SRCD;
 
     $self->SRD( $bin );
 };
