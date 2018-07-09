@@ -175,9 +175,9 @@ has records     =>
     lazy        => 1,
     builder     => sub {
         my ($self) = @_;
-        return [] unless defined $self->SFRD;
-        return [] unless length  $self->SFRD;
-        return Net::EGTS::Record->decode_all( $self->SFRD );
+        return [] unless defined $self->SDR;
+        return [] unless length  $self->SDR;
+        return Net::EGTS::Record->decode_all( $self->SDR );
     },
 ;
 
@@ -246,10 +246,61 @@ sub next {
     return $self;
 }
 
-=head2 decode \$bin
+=head2 stream \$bin
+
+Parse incoming stream and creates packages from it.
+If the data is not sufficient to create the package: returns the number
+of data as many more as required.
+The buffer is trimmed by the size of the created package.
+
+Return:
+
+=over
+
+=item undef, $need
+
+if decode in process and need more data
+
+=item object
+
+if the packet is fully decoded
+
+=item error code
+
+if there are any problems
+
+=cut
+
+sub stream {
+    my ($class, $bin) = @_;
+    use bytes;
+
+    # Need first 10 bytes
+    my $need = 10;
+    return (undef, $need) if $need > length $$bin;
+
+    # Packet size
+    my $HL  = unpack 'C' => substr $$bin, 3, usize('C');
+    my $FDL = unpack 'S' => substr $$bin, 5, usize('S');
+
+    # Need full package size
+    $need = $HL + $FDL + ($FDL ? 2 : 0);
+    return (undef, $need) if $need > length $$bin;
+
+    my $packet = substr $$bin, 0, $need, '';
+
+    # Packet type
+    my $PT  = unpack 'C' => substr $packet, 9, usize('C');
+
+    # Create packet
+    my $subclass = $TYPES{ $PT };
+    load $subclass;
+    return $subclass->new->decode( \$packet );
+}
+
+=head2 decode $bin
 
 Decode binary stream I<$bin> into packet object.
-The binary stream will be truncated!
 Return:
 
 =over
