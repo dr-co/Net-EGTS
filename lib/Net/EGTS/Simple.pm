@@ -5,7 +5,6 @@ use Mouse;
 
 use Carp;
 use IO::Socket::INET;
-use Data::Dumper;
 
 use Net::EGTS::Util;
 use Net::EGTS::Types;

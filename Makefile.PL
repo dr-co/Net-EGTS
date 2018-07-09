@@ -13,10 +13,16 @@ WriteMakefile(
     MIN_PERL_VERSION => '5.10.0',
     PREREQ_PM       => {
         'Carp'                          => '0',
+        'IO::Socket::INET'              => '0',
+        'Mouse'                         => '0',
         'Digest::CRC'                   => '0',
         'Date::Parse'                   => '0',
+        'List::MoreUtils'               => '0',
+        'Encode'                        => '0',
+        'POSIX'                         => '0',
         'Test::Compile'                 => '0',
         'Test::More'                    => '0',
+        'namespace::autoclean'          => '0',
     },
     META_MERGE => {
         resources => {

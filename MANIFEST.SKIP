@@ -7,3 +7,7 @@ MYMETA\..*
 ^Makefile$
 \.tar\.gz$
 debian
+.build
+doc
+script
+.travis.yml
