@@ -17,6 +17,7 @@ use Net::EGTS::SubRecord;
 
 use Net::EGTS::Packet::Appdata;
 use Net::EGTS::SubRecord::Auth::DispatcherIdentity;
+use Net::EGTS::SubRecord::Teledata::PosData;
 
 =head1 NAME
 
@@ -71,8 +72,12 @@ Reset internal counters for new connection
 
 sub reset {
     $Net::EGTS::Packet::PID = 0;
-#    $Net::EGTS::Record::RN  = 0;
+    $Net::EGTS::Record::RN  = 0;
 }
+
+=head2 connect
+
+=cut
 
 sub connect {
     my ($self) = @_;
@@ -80,6 +85,10 @@ sub connect {
     $self->reset;
     return $self;
 }
+
+=head2 disconnect
+
+=cut
 
 sub disconnect {
     my ($self) = @_;
@@ -89,174 +98,94 @@ sub disconnect {
     return $self;
 }
 
+# Get packet response
+sub _response {
+    my ($self, $packet) = @_;
+
+    my $response;
+    my $start = time;
+    while (1) {
+        my $in = '';
+        $self->socket->recv($in, 65536);
+
+        my ($p) = Net::EGTS::Packet->stream( \$in );
+        if( $p ) {
+            next unless $p->PT      eq EGTS_PT_RESPONSE;
+            next unless $p->RPID    eq $packet->PID;
+
+            $response = $p;
+            last;
+        }
+
+        last if time > $start + $self->rtimeout;
+    }
+    return 'Response timeout' unless $response;
+
+    my $record = $response->records->[0];
+    return 'No records' unless $record;
+
+    my $subrecord = $record->subrecords->[0];
+    return 'No subrecords' unless $subrecord;
+    return "Error on packet @{[ $subrecord->CRN ]}"
+        unless $subrecord->RST eq EGTS_PC_OK;
+
+    return $self;
+}
+
+=head2 auth
+
+Athorization
+
+=cut
+
 sub auth {
     my ($self) = @_;
     use bytes;
 
-    my $in = '';
-
-    my $a = Net::EGTS::SubRecord::Auth::DispatcherIdentity->new(
-        DT      => $self->type,
-        DID     => $self->did,
-        DSCR    => $self->description,
+    my $auth = Net::EGTS::Packet::Appdata->new(
+        PRIORITY        => 0b11,
+        SDR             => Net::EGTS::Record->new(
+            SST         => EGTS_AUTH_SERVICE,
+            RST         => EGTS_AUTH_SERVICE,
+            RD          => Net::EGTS::SubRecord::Auth::DispatcherIdentity->new(
+                DT      => $self->type,
+                DID     => $self->did,
+                DSCR    => $self->description,
+            )->encode,
+        )->encode,
     );
-    $a->encode;
-    warn 'sub', $a->as_debug;
+    $self->socket->send( $auth->encode );
 
-    my $r = Net::EGTS::Record->new(
-            SST => EGTS_AUTH_SERVICE,
-            RST => EGTS_AUTH_SERVICE,
-            RD  => $a->bin,
-        );
-    $r->encode;
-    warn 'record', $r->as_debug;
-
-    my $packet1 = Net::EGTS::Packet::Appdata->new(
-        PRIORITY    => 0b11,
-        SFRD        => $r->bin,
-    );
-    $packet1->encode;
-#warn Dumper $packet1;
-    warn "auth =[send]=>\n", $packet1->as_debug;
-#    $self->{socket}->send( $packet1->encode );
-#
-#    while (1) {
-#        my $in = '';
-#        $self->{socket}->recv($in, 65536)
-#    }
-
-    die;
-    return $self;
+    return $self->_response($auth);
 }
 
-#sub auth {
-#    my ($self) = @_;
-#
-#    my ($in, $out) = ('', '');
-#
-#    $out = egts_encode_packet(
-#        priority    => 'low',
-#        data        => [
-#            egts_encode_r(
-#                source      => EGTS_AUTH_SERVICE,
-#                recipient   => EGTS_AUTH_SERVICE,
-#                direction   => 'none',
-#                time        => undef,
-#                data        => [
-#                    egts_encode_sr
-#                        egts_encode_sr_dispatcher_identity(
-#                            $self->{dt},
-#                            $self->{did},
-#                            $self->{desc},
-#                        ),
-#                ],
-#            )
-#        ],
-#    );
-#    $self->{socket}->send($out);
-##    warn sprintf("auth %d bytes =[send]=>\n%s\n",
-##        length($out),
-##        join "\n", map {join ' ', @$_} dumper_bitstring_chunked $out => 4
-##    );
-#
-#    # Получаем ответ
-#    $self->{socket}->recv($in, 65536);
-##    warn sprintf("auth %d bytes <=[recv]=\n%s\n\n",
-##        length($in),
-##        join "\n", map {join ' ', @$_} dumper_bitstring_chunked $in => 4
-##    );
-##    my ($response) = egts_decode_packets $in;
-##    return 'Packet not EGTS_PT_RESPONSE'
-##        unless $response->{type} == EGTS_PT_RESPONSE;
-#
-#
-#    $self->{socket}->recv($in, 65536);
-##    warn sprintf("auth %d bytes <=[recv]=\n%s\n\n",
-##        length($in),
-##        join "\n", map {join ' ', @$_} dumper_bitstring_chunked $in => 4
-##    );
-##    my ($result) = egts_decode_packets $in;
-##    return 'Packet not EGTS_PT_APPDATA'
-##        unless $result->{type} == EGTS_PT_APPDATA;
-#
-##    warn dumper $result;
-#
-##    # Подтверждение принятия пакета авторизации
-##
-##    # Подтверждение проходжения авторизации
-##    return 'Not result' unless $response->{type} == EGTS_SR_RESULT_CODE;
-##    warn dumper {result => $result};
-##
-##    # Отправим подтверждение
-##    $out = egts_encode_packet(
-##        priority    => 'low',
-##        data        => [
-##            egts_encode_r(
-##                source      => EGTS_AUTH_SERVICE, #$self->{service},
-##                recipient   => EGTS_AUTH_SERVICE,
-##                direction   => 'none',
-##                time        => undef,
-##                data        => [
-##                    egts_encode_sr
-##                        egts_encode_sr_record_response(
-##                            $response->{id},
-##                            EGTS_PC_OK,
-##                        ),
-##                ],
-##            )
-##        ],
-##    );
-##    $self->{socket}->send($out);
-##    warn sprintf("auth %d bytes =[send]=>\n%s\n",
-##        length($out),
-##        join "\n", map {join ' ', @$_} dumper_bitstring_chunked $out => 4
-##    );
-#
-##    warn dumper \@response;
-#    return $self;
-#}
-#
-#sub teledata {
-#    my ($self, $data) = @_;
-#
-#    my $oid = delete $data->{id};
-#
-#    my ($in, $out) = ('', '');
-#
-#    $out = egts_encode_packet(
-#        priority    => 'low',
-#        data        => [
-#            egts_encode_r(
-#                oid         => $oid,
-#                source      => EGTS_TELEDATA_SERVICE,#$self->{service},
-#                recipient   => EGTS_TELEDATA_SERVICE,
-#                direction   => 'none',
-#                time        => undef,
-#                data        => [
-#                    egts_encode_sr
-#                        egts_encode_sr_pos_data( %$data )
-#                ],
-#            )
-#        ],
-#    );
-#
-#    $self->{socket}->send($out);
-##    warn sprintf("teledata %d bytes =[send]=>\n%s\n",
-##        length($out),
-##        join "\n", map {join ' ', @$_} dumper_bitstring_chunked $out => 4
-##    );
-#
-#    $self->{socket}->recv($in, 65536);
-##    warn sprintf("teledata %d bytes <=[recv]=\n%s\n\n",
-##        length($in),
-##        join "\n", map {join ' ', @$_} dumper_bitstring_chunked $in => 4
-##    );
-#
-##    my @response = egts_decode_packets $in;
-##    return 'Not response' unless $response[0]{type} == EGTS_PT_RESPONSE;
-##    warn dumper \@response;
-#
-#    return $self;
-#}
+=head2 posdata $data
+
+Send telemetry data
+
+=cut
+
+sub posdata {
+    my ($self, $data) = @_;
+    use bytes;
+
+    my $oid = delete $data->{id};
+    croak "id required" unless $oid;
+
+    my $pd = Net::EGTS::Packet::Appdata->new(
+        PRIORITY        => 0b11,
+        SDR             => Net::EGTS::Record->new(
+            OID         => $oid,
+            SST         => EGTS_TELEDATA_SERVICE,
+            RST         => EGTS_TELEDATA_SERVICE,
+            RD          => Net::EGTS::SubRecord::Teledata::PosData->new(
+                %$data,
+            )->encode,
+        )->encode,
+    );
+    $self->socket->send( $pd->encode );
+
+    return $self->_response($pd);
+}
 
 __PACKAGE__->meta->make_immutable();
