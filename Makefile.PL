@@ -20,17 +20,19 @@ WriteMakefile(
         'List::MoreUtils'               => '0',
         'Encode'                        => '0',
         'POSIX'                         => '0',
-        'Test::Compile'                 => '0',
-        'Test::More'                    => '0',
         'namespace::autoclean'          => '0',
     },
-    META_MERGE => {
-        resources => {
-            homepage =>
+    TEST_REQUIRES   => {
+        'Test::Compile'                 => '0',
+        'Test::More'                    => '0',
+    },
+    META_MERGE      => {
+        resources   => {
+            homepage    =>
                 'https://github.com/dr-co/Net-EGTS',
-            repository =>
+            repository  =>
                 'https://github.com/dr-co/Net-EGTS',
-            bugtracker =>
+            bugtracker  =>
                 'https://github.com/dr-co/Net-EGTS/issues',
         }
    },
