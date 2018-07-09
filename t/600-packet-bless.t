@@ -26,7 +26,7 @@ subtest 'rebless packet on decode' => sub {
     my $bin = $packet->encode;
     ok $bin, 'encode';
 
-    my $result = Net::EGTS::Packet->new->decode( \$bin );
+    my $result = Net::EGTS::Packet::Response->new->decode( \$bin );
     isa_ok $result, 'Net::EGTS::Packet::Response';
 
     is $packet->RPID,   1,          'Response Packet ID';

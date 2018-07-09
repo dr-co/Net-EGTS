@@ -17,35 +17,6 @@ require Net::EGTS::Record;
 # Global packet identifier
 our $PID    = 0;
 
-# State machine
-our @STATES = qw(null base header ok);
-our %STATES = (
-    # initial
-    null        => {
-        'index' => 0,
-        'sub'   => \&_decode_base,
-        'next'  => [qw(base ok)]
-    },
-    # the length of the header is known
-    base        => {
-        'index' => 1,
-        'sub'   => \&_decode_header,
-        'next'  => [qw(header ok)],
-    },
-    # header complete, process data
-    header      => {
-        'index' => 2,
-        'sub'   => \&_decode_data,
-        'next'  => [qw(ok)],
-    },
-    # complete
-    ok          => {
-        'index' => 3,
-        'sub'   => sub { return $_[0] },
-        'next'  => [qw{ok}],
-    },
-);
-
 # Packet types and classes
 our %TYPES = (
     EGTS_PT_RESPONSE,       'Net::EGTS::Packet::Response',
@@ -164,10 +135,7 @@ has SFRCS       =>
 # Private:
 # Packet binary
 has bin         => is => 'rw', isa => 'Str',  default => '';
-# Counter of bytes need to complete packet decode
-has need        => is => 'rw', isa => 'uInt', default => 10;
-# Current packet decoder state
-has state       => is => 'rw', isa => 'Str',  default => 'null';
+
 # Array of decoded records
 has records     =>
     is          => 'rw',
@@ -216,7 +184,6 @@ sub take {
 
     my $chunk = substr $$bin, 0 => $length, '';
     $self->bin( $self->bin . $chunk );
-    $self->need( $self->need - length($chunk) );
 
     return unpack $mask => $chunk;
 }
@@ -231,19 +198,6 @@ sub nip {
 
     my $chunk = substr $$bin, 0 => $length, '';
     return unpack $mask => $chunk;
-}
-
-# Goto next decode state
-sub next {
-    my ($self, $state, $need) = @_;
-
-    croak 'Need more binary data. Something wrong in decoder?' if $self->need;
-    croak sprintf 'Can`t goto state "%s" from "%s"', $state, $self->state
-        unless any { $_ eq $state} @{$STATES{ $self->state }{next}};
-
-    $self->state( $state );
-    $self->need( $need );
-    return $self;
 }
 
 =head2 stream \$bin
@@ -325,41 +279,6 @@ sub decode {
     my ($self, $bin) = @_;
     use bytes;
 
-    for my $name ( @STATES ) {
-        # all complete
-        return $self if $self->state eq 'ok';
-
-        # skip completed steps
-        next unless $name eq $self->state;
-
-        # need more data
-        my $bin_length = length($$bin);
-        return (undef, $self->need - $bin_length) if $bin_length < $self->need;
-
-        # get current state definition
-        my $state   = $STATES{$name};
-        my $sub     = $state->{sub};
-
-        # process data
-        my $result = $self->$sub( $bin );
-        return $result unless ref $result;
-
-        # rebless when known packet type
-        if( $result->state eq 'base' ) {
-            my $subclass = $TYPES{ $self->PT };
-            load $subclass;
-            $self = bless $self => $subclass;
-        }
-    }
-
-    die 'Unknown packet state: ', $self->state;
-}
-
-# Basic header part with header length
-sub _decode_base {
-    my ($self, $bin) = @_;
-    use bytes;
-
     $self->PRV( $self->take($bin => 'C') );
     $self->SKID($self->take($bin => 'C') );
 
@@ -380,14 +299,6 @@ sub _decode_base {
     return EGTS_PC_INC_HEADERFORM   unless $self->HL  == 11 || $self->HL == 16;
     return EGTS_PC_UNS_PROTOCOL     unless $self->PRF == 0x00;
 
-    return $self->next(base => $self->HL - length($self->bin)); # optional + HCS
-}
-
-# Complete header with data length
-sub _decode_header {
-    my ($self, $bin) = @_;
-    use bytes;
-
     if( $self->RTE ) {
         $self->PRA( $self->take($bin => 'S') );
         $self->RCA( $self->take($bin => 'S') );
@@ -401,15 +312,7 @@ sub _decode_header {
     return EGTS_PC_HEADERCRC_ERROR unless $self->HCS == $hsc;
 
     # Complete package. No data.
-    return $self->next(ok => 0) unless $self->FDL;
-    # Next get data
-    return $self->next(header => $self->FDL + 2); # SFRD + SFRCS
-}
-
-# Complete packet decode
-sub _decode_data {
-    my ($self, $bin) = @_;
-    use bytes;
+    return $self unless $self->FDL;
 
     $self->SFRD( $self->take($bin => 'a*' => $self->FDL) );
 
@@ -426,7 +329,7 @@ sub _decode_data {
         return EGTS_PC_INC_DATAFORM;
     }
 
-    return $self->next(ok => 0);
+    return $self;
 }
 
 =head2 encode
@@ -483,8 +386,6 @@ sub encode {
     }
 
     $self->bin( $bin );
-    $self->need( 0 );
-    $self->next( 'ok' => 0 );
     return $bin;
 }
 
