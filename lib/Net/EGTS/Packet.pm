@@ -421,6 +421,7 @@ sub as_debug {
     if( @bytes ) {
 
         if( my @qualify = inner() ) {
+            splice @bytes, 0 => -2;
             push @str => sprintf('SFRD =>');
             push @str, @qualify;
             push @str => sprintf('<======');
