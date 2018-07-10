@@ -63,11 +63,11 @@ subtest 'time' => sub {
         RST     => EGTS_AUTH_SERVICE,
         RD      => 'abc',
 
-        time    => '2018-01-01 22:30:00',
+        time    => '2018-01-01 22:30:00 +0000',
     );
     isa_ok $record, 'Net::EGTS::Record';
 
-    is $record->TM,     252531000, 'Time';
+    is $record->TM,     252541800, 'Time';
     is $record->TMFE,   1, 'Time Field Exists';
 };
 
