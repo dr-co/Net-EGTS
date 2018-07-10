@@ -105,7 +105,8 @@ sub _response {
     my $start = time;
     while (1) {
         my $in = '';
-        $self->socket->recv($in, 65536);
+        my $res = $self->socket->recv($in, 65536);
+        return 'Recv error' unless defined $res;
 
         my ($p) = Net::EGTS::Packet->stream( \$in );
         if( $p ) {
@@ -153,7 +154,9 @@ sub auth {
             )->encode,
         )->encode,
     );
-    $self->socket->send( $auth->encode );
+    my $res = $self->socket->send( $auth->encode );
+    return 'Send error' unless defined $res;
+    return 'Send error' unless $res == length $auth->bin;
 
     return $self->_response($auth);
 }
@@ -182,7 +185,9 @@ sub posdata {
             )->encode,
         )->encode,
     );
-    $self->socket->send( $pd->encode );
+    my $res = $self->socket->send( $pd->encode );
+    return 'Send error' unless defined $res;
+    return 'Send error' unless $res == length $pd->bin;
 
     return $self->_response($pd);
 }
