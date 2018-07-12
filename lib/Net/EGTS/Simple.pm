@@ -142,22 +142,34 @@ sub auth {
     my ($self) = @_;
     use bytes;
 
-    my $auth = Net::EGTS::Packet::Appdata->new(
-        PRIORITY        => 0b11,
-        SDR             => Net::EGTS::Record->new(
-            SST         => EGTS_AUTH_SERVICE,
-            RST         => EGTS_AUTH_SERVICE,
-            RD          => Net::EGTS::SubRecord::Auth::DispatcherIdentity->new(
-                DT      => $self->type,
-                DID     => $self->did,
-                DSCR    => $self->description,
+    my $result;
+    for(my $i = $self->attempts; $i > 0; $i-- ) {
+        my $auth = Net::EGTS::Packet::Appdata->new(
+            PRIORITY        => 0b11,
+            SDR             => Net::EGTS::Record->new(
+                SST         => EGTS_AUTH_SERVICE,
+                RST         => EGTS_AUTH_SERVICE,
+                RD          => Net::EGTS::SubRecord::Auth::DispatcherIdentity->new(
+                    DT      => $self->type,
+                    DID     => $self->did,
+                    DSCR    => $self->description,
+                )->encode,
             )->encode,
-        )->encode,
-    );
-    my $res = print {$self->socket} $auth->encode;
-    return 'Send error' unless $res;
+        );
+        unless( my $res = print {$self->socket} $auth->encode ) {
+            return 'Send error';
+        }
 
-    return $self->_response($auth);
+        unless( my $res = $self->_response($auth) ) {
+            $result = $res;
+            next;
+        }
+
+        $result = $self;
+        last;
+    }
+
+    return $result;
 }
 
 =head2 posdata $data
@@ -173,21 +185,34 @@ sub posdata {
     my $oid = delete $data->{id};
     croak "id required" unless $oid;
 
-    my $pd = Net::EGTS::Packet::Appdata->new(
-        PRIORITY        => 0b11,
-        SDR             => Net::EGTS::Record->new(
-            OID         => $oid,
-            SST         => EGTS_TELEDATA_SERVICE,
-            RST         => EGTS_TELEDATA_SERVICE,
-            RD          => Net::EGTS::SubRecord::Teledata::PosData->new(
-                %$data,
-            )->encode,
-        )->encode,
-    );
-    my $res = print {$self->socket} $pd->encode;
-    return 'Send error' unless $res;
+    my $result;
+    for(my $i = $self->attempts; $i > 0; $i-- ) {
 
-    return $self->_response($pd);
+        my $pd = Net::EGTS::Packet::Appdata->new(
+            PRIORITY        => 0b11,
+            SDR             => Net::EGTS::Record->new(
+                OID         => $oid,
+                SST         => EGTS_TELEDATA_SERVICE,
+                RST         => EGTS_TELEDATA_SERVICE,
+                RD          => Net::EGTS::SubRecord::Teledata::PosData->new(
+                    %$data,
+                )->encode,
+            )->encode,
+        );
+        unless( my $res = print {$self->socket} $pd->encode ) {
+            return 'Send error';
+        }
+
+        unless( my $res = $self->_response($pd) ) {
+            $result = $res;
+            next;
+        }
+
+        $result = $self;
+        last;
+    }
+
+    return $result;
 }
 
 __PACKAGE__->meta->make_immutable();
