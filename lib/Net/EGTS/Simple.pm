@@ -38,7 +38,7 @@ has host        => is => 'ro', isa => 'Str', required => 1;
 has port        => is => 'ro', isa => 'Int', required => 1;
 
 has timeout     => is => 'ro', isa => 'Int', default => EGTS_TL_RECONNECT_TO;
-has attempt     => is => 'ro', isa => 'Int', default => EGTS_TL_RESEND_ATTEMPTS;
+has attempts    => is => 'ro', isa => 'Int', default => EGTS_TL_RESEND_ATTEMPTS;
 has rtimeout    => is => 'ro', isa => 'Int', default => EGTS_TL_RESPONSE_TO;
 
 has did         => is => 'ro', isa => 'Int', required => 1;
