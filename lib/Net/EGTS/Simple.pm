@@ -30,7 +30,7 @@ use constant EGTS_SL_NOT_AUTH_TO            => 6;
 # Response timeout
 use constant EGTS_TL_RESPONSE_ТО         => 5;
 # Resend attempts if timeout TL_RESPONSE_ТО
-use constant EGTS_TL_RESEND_ATTEMPTS     => 3;
+use constant EGTS_TL_RESEND_ATTEMPTS        => 3;
 # Connection timeout
 use constant EGTS_TL_RECONNECT_ТО        => 30;
 
@@ -105,7 +105,7 @@ sub _response {
     my $start = time;
     while (1) {
         my $in = '';
-        my $res = $self->socket->recv($in, 65536);
+        my $res = sysread $self->socket, $in, 65536;
         return 'Recv error' unless defined $res;
 
         my ($p) = Net::EGTS::Packet->stream( \$in );
@@ -154,9 +154,8 @@ sub auth {
             )->encode,
         )->encode,
     );
-    my $res = $self->socket->send( $auth->encode );
-    return 'Send error' unless defined $res;
-    return 'Send error' unless $res == length $auth->bin;
+    my $res = print {$self->socket} $auth->encode;
+    return 'Send error' unless $res;
 
     return $self->_response($auth);
 }
@@ -185,9 +184,8 @@ sub posdata {
             )->encode,
         )->encode,
     );
-    my $res = $self->socket->send( $pd->encode );
-    return 'Send error' unless defined $res;
-    return 'Send error' unless $res == length $pd->bin;
+    my $res = print {$self->socket} $pd->encode;
+    return 'Send error' unless $res;
 
     return $self->_response($pd);
 }
