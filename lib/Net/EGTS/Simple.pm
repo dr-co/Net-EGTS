@@ -25,21 +25,21 @@ Net::EGTS::Simple - simple socket transport
 =cut
 
 # Timeout, sec. (0 .. 255)
-use constant EGTS_SL_NOT_AUTH_TO            => 6;
+use constant EGTS_SL_NOT_AUTH_TO        => 6;
 
 # Response timeout
-use constant EGTS_TL_RESPONSE_ТО         => 5;
-# Resend attempts if timeout TL_RESPONSE_ТО
-use constant EGTS_TL_RESEND_ATTEMPTS        => 3;
+use constant EGTS_TL_RESPONSE_TO        => 5;
+# Resend attempts if timeout EGTS_TL_RESPONSE_TO
+use constant EGTS_TL_RESEND_ATTEMPTS    => 3;
 # Connection timeout
-use constant EGTS_TL_RECONNECT_ТО        => 30;
+use constant EGTS_TL_RECONNECT_TO       => 30;
 
 has host        => is => 'ro', isa => 'Str', required => 1;
 has port        => is => 'ro', isa => 'Int', required => 1;
 
-has timeout     => is => 'ro', isa => 'Int', default => EGTS_TL_RECONNECT_ТО;
+has timeout     => is => 'ro', isa => 'Int', default => EGTS_TL_RECONNECT_TO;
 has attempt     => is => 'ro', isa => 'Int', default => EGTS_TL_RESEND_ATTEMPTS;
-has rtimeout    => is => 'ro', isa => 'Int', default => EGTS_TL_RESPONSE_ТО;
+has rtimeout    => is => 'ro', isa => 'Int', default => EGTS_TL_RESPONSE_TO;
 
 has did         => is => 'ro', isa => 'Int', required => 1;
 has type        => is => 'ro', isa => 'Int', default => 0;
