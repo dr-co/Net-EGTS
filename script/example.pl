@@ -15,7 +15,7 @@ GetOptions(
 use Net::EGTS::Util;
 use Net::EGTS::Simple;
 
-die "Require --did=NUM\n" unless $did;
+die "Require --did=NUM\n" unless defined $did;
 
 my $client = Net::EGTS::Simple->new(
         host    => 'rnis.mos.ru',
