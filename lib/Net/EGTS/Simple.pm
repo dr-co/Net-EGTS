@@ -20,7 +20,7 @@ use Net::EGTS::SubRecord::Teledata::PosData;
 
 =head1 NAME
 
-Net::EGTS::Simple - simple socket transport
+Net::EGTS::Simple - simple blocking socket transport
 
 =cut
 
