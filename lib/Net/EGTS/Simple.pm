@@ -145,7 +145,7 @@ sub auth {
     my $result;
     for(my $i = $self->attempts; $i > 0; $i-- ) {
         my $auth = Net::EGTS::Packet::Appdata->new(
-            PRIORITY        => 0b11,
+            PRIORITY        => EGTS_PRIORITY_LOW,
             SDR             => Net::EGTS::Record->new(
                 SST         => EGTS_AUTH_SERVICE,
                 RST         => EGTS_AUTH_SERVICE,
@@ -189,7 +189,7 @@ sub posdata {
     for(my $i = $self->attempts; $i > 0; $i-- ) {
 
         my $pd = Net::EGTS::Packet::Appdata->new(
-            PRIORITY        => 0b11,
+            PRIORITY        => EGTS_PRIORITY_LOW,
             SDR             => Net::EGTS::Record->new(
                 OID         => $oid,
                 SST         => EGTS_TELEDATA_SERVICE,

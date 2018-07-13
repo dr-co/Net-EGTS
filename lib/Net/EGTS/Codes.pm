@@ -205,4 +205,16 @@ push @EXPORT, qw(
     EGTS_SR_PASSENGERS_COUNTERS
 );
 
+use constant EGTS_PRIORITY_HIGHEST  => 0b00;
+use constant EGTS_PRIORITY_HIGH     => 0b01;
+use constant EGTS_PRIORITY_NORMAL   => 0b10;
+use constant EGTS_PRIORITY_LOW      => 0b11;
+
+push @EXPORT, qw(
+    EGTS_PRIORITY_HIGHEST
+    EGTS_PRIORITY_HIGH
+    EGTS_PRIORITY_NORMAL
+    EGTS_PRIORITY_LOW
+);
+
 __PACKAGE__->meta->make_immutable();

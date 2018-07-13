@@ -45,7 +45,7 @@ has ENA         => is => 'rw', isa => 'BIT2', default => 0b00;
 # Compressed
 has CMP         => is => 'rw', isa => 'BIT1', default => 0b0;
 # Priority
-has PRIORITY    => is => 'rw', isa => 'BIT2', default => 0b00;
+has PRIORITY    => is => 'rw', isa => 'BIT2', default => EGTS_PRIORITY_HIGHEST;
 
 # Header Length
 has HL          =>
