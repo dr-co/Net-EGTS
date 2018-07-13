@@ -114,7 +114,7 @@ subtest 'send' => sub {
     is $subrecord->SRL, 21,                 'Subrecord Length';
 
     is
-        strftime('%F %T +0000', gmtime new2time($subrecord->NTM)),
+        strftime('%Y-%m-%d %H:%M:%S +0000', gmtime new2time($subrecord->NTM)),
         '2018-07-06 10:47:43 +0000',
         'Navigation Time'
     ;

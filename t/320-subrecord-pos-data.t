@@ -19,7 +19,7 @@ subtest 'base' => sub {
     plan tests => 27;
 
     my $now = time;
-    my $str = strftime '%F %T +0000', gmtime $now;
+    my $str = strftime '%Y-%m-%d %H:%M:%S +0000', gmtime $now;
 
     my $subrecord = Net::EGTS::SubRecord::Teledata::PosData->new(
         longitude   => 37.7,
